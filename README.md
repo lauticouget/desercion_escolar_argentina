@@ -33,5 +33,3 @@ Si Pepe necesita el codigo de Mengano mientras desarrolla su tarea, se lo trae h
 
 ## Cookie cutter template
 https://github.com/deployr-ai/workstation
-
-Archivo README del template del proyecto: ./template_README.md

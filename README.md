@@ -32,3 +32,4 @@ Si Pepe necesita el codigo de Mengano mientras desarrolla su tarea, se lo trae h
 - ```la_primer_tarea_de_pepito: primera parte de mi tarea```
 
 ## Cookie cutter template
+https://github.com/deployr-ai/workstation

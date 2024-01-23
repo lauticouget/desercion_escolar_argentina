@@ -63,9 +63,11 @@ Organización del proyecto
 Para ejecutar:
 ------------
 
-Desde esta carpeta, ingresar el comando make workstation-up.
+Desde carpeta root/raíz del proyecto, ingresar el comando ```make workstation-up``` en terminal. <br>
+- (Para Windows only) Instalar lo recomendado en el siguiente post para poder correr el make file: https://stackoverflow.com/questions/66525016/how-to-run-make-command-in-gitbash-in-windows
 
-## Cómo trabajar las ramas ? (GitFlow)
+# GitFlow
+## Cómo trabajar las ramas ?
 - Rama principal: main
 - Rama de desarrollo (la cual sale y va hacia main): develop
 - El resto de las ramas salen desde develop y vuelven a develop: 
@@ -95,3 +97,17 @@ Si Pepe necesita el codigo de Mengano mientras desarrolla su tarea, se lo trae h
 
 ## Cookie cutter template
 https://github.com/deployr-ai/workstation
+
+# Local Launch Error Resolutions
+- Error: ```ERROR: failed to solve: mltooling/ml-workspace:0.13.2: error getting credentials - err: exit status 1, out: `` ```
+<br><br>
+  - Reproducción:
+  <br><br> ```make Makefile``` desde  root path, en terminal. Esto corre un script que intenta descargar y armar la imagen de docker.
+  <br><br>
+  - Solución:
+  <br><br>Ir al archivo
+  <br>```<carpeta donde tenemos nuestro user, suele ser el $HOME>/.docker/config.json```
+  <br>y cambiar ```"credsStore": "desktop"``` por ```"credsStore": "osxkeychain"```
+  <br><br>
+  - Link al post con la solucion:
+  <br>https://forums.docker.com/t/error-failed-to-solve-error-getting-credentials-err-exit-status-1-out/136124/4

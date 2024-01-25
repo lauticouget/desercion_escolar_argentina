@@ -45,9 +45,7 @@ Organización del proyecto
     │
     ├── models             <- Modelos listos.
     │
-    ├── notebooks          <- Jupyter notebooks.
-    │
-    └── src                <- Código del proyecto.
+    ├── notebooks          <- Jupyter notebooks. (desde Humai recomiendan agregarle la fecha al inicio del nombre.)
     
     
 Para ejecutar:

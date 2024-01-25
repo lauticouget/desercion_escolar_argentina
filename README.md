@@ -36,26 +36,16 @@ Los valores nulos fueron reemplazados por la media de cada atributo. En el caso 
 Organización del proyecto
 ------------
 
-    ├── LICENSE
-    ├── README.md          <- Este readme.
+    ├── README.md
     ├── artifacts          <- Repositorio de artefactos, como logs, transformadores, etc.
     ├── data
+    │   ├── raw            <- La data de origen, inmutable.
     │   ├── preprocessed   <- Data intermedia con algunas transformaciones.
-    │   ├── stage          <- La data lista para ser utilizada en un modelo.
-    │   └── raw            <- La data de origen, inmutable.
-    │
-    ├── docs               <- Proyecto default de Sphinx.
+    │   └── stage          <- La data lista para ser utilizada en un modelo.
     │
     ├── models             <- Modelos listos.
     │
-    ├── notebooks          <- Jupyter notebooks. Dejamos una convención sugerida:
-    │                         iniciales-numero-descripcion corta. Ejemplo:
-    │                         `he-1.0-eda-base-clientes`.
-    │
-    ├── references         <- Manuales de la data, documentación, todo lo relevante para trabajar.
-    │
-    ├── reports            <- Reportes en HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Carpeta para guardar imágenes de rápido acceso.
+    ├── notebooks          <- Jupyter notebooks.
     │
     └── src                <- Código del proyecto.
     
@@ -92,6 +82,3 @@ Si Pepe necesita el codigo de Mengano mientras desarrolla su tarea, se lo trae h
 - ```la_primer_tarea_de_pepito: segunda parte de mi tarea```
 - ```la_primer_tarea_de_mengano: codigo super util``` *<-- Acá es muy claro que pepe se trajo este commit de la rama de mengano. Si mengano no nombraba su rama correctamente entonces nadie sabe de donde salió ese commit.*
 - ```la_primer_tarea_de_pepito: primera parte de mi tarea```
-
-## Cookie cutter template
-https://github.com/deployr-ai/workstation

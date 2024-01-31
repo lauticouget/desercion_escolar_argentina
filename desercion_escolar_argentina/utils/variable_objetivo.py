@@ -8,7 +8,7 @@ def variable_objetivo(lista: list, periodos_requeridos: list, columnas_requerida
     Parámetros:
         lista (list): recibe una lista de bases de datos filtrada.
         periodos_requeridos (list): Lista de tuplas indicando los dos periodos inicial y final por año y periodo:
-        [((2021, 2), (2021, 3)), ((2021, 3), (2021, 4)), ((2021, 2), (2021, 3)), ((2021, 3), (2021, 4))]
+        [((2021, 2), (2021, 3)), ((2021, 3), (2021, 4)), ((2022, 2), (2022, 3)), ((2022, 3), (2022, 4))]
         columnas_requeridas (list): Lista de años para los cuales se desea obtener las bases de datos:
         ['CODUSU', 'ANO4', 'TRIMESTRE', 'NRO_HOGAR', 'COMPONENTE', 'CH06', 'CH10', 'NIVEL_ED']
 

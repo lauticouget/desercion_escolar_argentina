@@ -32,7 +32,6 @@ A su vez, el estudio de Michel Torino toma la población en edad escolar teóric
 Los valores nulos fueron reemplazados por la media de cada atributo. En el caso particular de los ingresos y deciles de ingresos, podría ser provechoso investigar otras formas de imputación.
 
 # Sobre este repositorio
-
 Organización del proyecto
 ------------
 
@@ -51,7 +50,10 @@ Organización del proyecto
 Para ejecutar:
 ------------
 
-Desde esta carpeta, ingresar el comando make workstation-up.
+Python version: 3.11.5
+<br>
+Poetry package orchestrator must be installed (version used at installation: 1.6.1)
+
 
 ## Cómo trabajar las ramas ? (GitFlow)
 - Rama principal: main

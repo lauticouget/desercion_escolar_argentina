@@ -32,6 +32,8 @@ A su vez, el estudio de Michel Torino toma la población en edad escolar teóric
 Los valores nulos fueron reemplazados por la media de cada atributo. En el caso particular de los ingresos y deciles de ingresos, podría ser provechoso investigar otras formas de imputación.
 
 # Sobre este repositorio
+Python version: 3.11.5
+Poetry package orchestrator must be installed
 
 Organización del proyecto
 ------------

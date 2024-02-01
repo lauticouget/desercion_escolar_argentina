@@ -39,7 +39,7 @@ def crear_feature_binaria(df: pd.DataFrame,
     data.loc[:, nombre_feature] = np.where(condicion, 1, 0)
     return data
 
-if __name__ = '__main__':
+if __name__ == '__main__':
     # dataframe de estudiantes que desertaron en el tercer trimestre de 2021
     hogares21_2 = pyeph.get(data="eph", year=2021, period=2, base_type='hogar')
     individuos21_2 = pyeph.get(data="eph", year=2021, period=2, base_type='individual')
@@ -84,18 +84,18 @@ if __name__ = '__main__':
     jefa_mujer = crear_feature_binaria(data, 'JEFA_MUJER', jefa_mujer_cond)
 
     print('Estado de ocupación del jefx de hogar de las personas que dejaron sus estudios entre el segundo y tercer trimestre de 2021.')
-    jefe_trabaja.JEFE_TRABAJA.value_counts(normalize=True)
+    print(jefe_trabaja.JEFE_TRABAJA.value_counts(normalize=True))
 
     print('Distribución de desertados según género del jefx de hogar.')
-    jefa_mujer.JEFA_MUJER.value_counts(normalize=True)
+    print(jefa_mujer.JEFA_MUJER.value_counts(normalize=True))
 
     # HOGAR_MONOP
     data = unir_presonas_hogares(desertados21_3, hogar_no_mono)
-    cond_hogar_monop = df[['ESTADO']].isna()
+    cond_hogar_monop = data[['ESTADO']].isna()
     hogar_monop = crear_feature_binaria(data, 'HOGAR_MONOP', cond_hogar_monop)
 
     print('Distribución de desertados según hogar monoparental o no.')
-    hogar_monop.HOGAR_MONOP.value_counts(normalize=True)
+    print(hogar_monop.HOGAR_MONOP.value_counts(normalize=True))
 
     # variable CONYUGE_TRABAJA
     data = unir_presonas_hogares(desertados21_3, hogar_no_mono)
@@ -103,4 +103,4 @@ if __name__ = '__main__':
     conyuge_trabaja = crear_feature_binaria(data, 'CONYUGE_TRABAJA', cond_conyuge_trabaja)
 
     print('Distribución de desertados según condición laboral del cónyuge de hogar.')
-    hogar_monop.HOGAR_MONOP.value_counts(normalize=True)
+    print(conyuge_trabaja.CONYUGE_TRABAJA.value_counts(normalize=True))

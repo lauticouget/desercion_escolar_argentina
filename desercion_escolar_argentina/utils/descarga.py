@@ -16,7 +16,7 @@ def obtener_eph(tipo: str, anio: int, periodo: int) -> pd.DataFrame:
     try:
         data = pyeph.get(data="eph", year=anio, period=periodo, base_type=tipo)
         return data
-    except Exception as e:
+    except ValueError as e:
         print(f"Error obteniendo base de datos para {tipo}, año {anio}, periodo {periodo}: {e}")
         return pd.DataFrame()
 

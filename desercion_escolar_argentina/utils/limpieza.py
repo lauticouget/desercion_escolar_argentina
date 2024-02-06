@@ -13,7 +13,7 @@ cols_id_individual = [
 ]
 
 cols_individual = [
-    'CH03', 'CH04', 'CH06', 'CH07', 'CH08', 'CH09', 'CH11', 'CH15', 'CH16', 'ESTADO', 'CAT_OCUP', 'CAT_INAC', 'PP02E', 'PP02H', 'DECINDR', 'T_VI'
+    'CH03', 'CH04', 'CH06', 'CH07', 'CH08', 'CH09', 'CH10', 'CH11', 'CH15', 'CH16', 'ESTADO', 'CAT_OCUP', 'CAT_INAC', 'PP02E', 'PP02H', 'DECINDR', 'T_VI'
 ]
 
 def seleccionar_features(data, 

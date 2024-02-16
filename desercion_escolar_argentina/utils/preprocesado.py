@@ -4,7 +4,8 @@ import numpy as np
 def unir_personas_hogares(df_individual: pd.DataFrame,
                           df_hogares: pd.DataFrame,
                           sobre: list[str] | None = None,
-                          como: str = 'inner') -> pd.DataFrame:
+                          como: str = 'inner',
+                          sufijos: tuple[str] = ('', '_r')) -> pd.DataFrame:
     """Une un dataframe de personas con uno de hogar por las columnas CODUSU y NRO_HOGAR.
 
     Args:
@@ -21,11 +22,10 @@ def unir_personas_hogares(df_individual: pd.DataFrame,
                         df_hogares,
                         on=sobre,
                         how=como,
-                        suffixes=('', '_r'))
-    
+                        suffixes=sufijos)
     return df_unido
 
-def crear_feature_binaria(df: pd.DataFrame,
+def crear_feature_binaria(data: pd.DataFrame,
                           nombre_feature: str,
                           condicion: pd.Series) -> pd.DataFrame:
     """Crea una feature categórica binaria según si se cumple una condición en las columnas del dataframe pasado como argumento.
@@ -38,9 +38,7 @@ def crear_feature_binaria(df: pd.DataFrame,
     Returns:
         pd.DataFrame: un DataFrame con la columna categórica de nombre 'nombre_feature'
     """
-    data = df.copy()
     data.loc[:, nombre_feature] = np.where(condicion, 1, 0)
-    data.drop(data.filter(regex='_r$').columns, axis=1, inplace=True)
     return data
 
 def eliminar_individuos_duplicados(base_datos:pd.DataFrame, lista_bases_comparar:list)->pd.DataFrame:

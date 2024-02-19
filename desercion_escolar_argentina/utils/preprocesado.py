@@ -5,7 +5,7 @@ def unir_personas_hogares(df_individual: pd.DataFrame,
                           df_hogares: pd.DataFrame,
                           sobre: list[str] | None = None,
                           como: str = 'inner',
-                          sufijos: tuple[str] = ('', '_r')) -> pd.DataFrame:
+                          sufijos: tuple[str, str] = ('', '_r')) -> pd.DataFrame:
     """Une un dataframe de personas con uno de hogar por las columnas CODUSU y NRO_HOGAR.
 
     Args:

@@ -131,7 +131,7 @@ def generar_ratio_ocupados_miembros(data: pd.DataFrame,
     ocupados_por_hogar = individuos[individuos.ESTADO == 1].groupby(['CODUSU', 'NRO_HOGAR'])['ESTADO'].sum().reset_index()
     ocupados_por_hogar.rename({'ESTADO': 'nro_ocupados'}, axis=1, inplace=True)
     ocupados = pd.merge(hogares, ocupados_por_hogar)
-    ocupados.loc[:, 'ratio_ocupados'] = ocupados.IX_TOT / ocupados.nro_ocupados
+    ocupados.loc[:, 'ratio_ocupados'] = ocupados.nro_ocupados / ocupados.IX_TOT
     cols = l.cols_id_hogar + ['ratio_ocupados']
     estudiantes = pd.merge(data, ocupados[cols], how='left')
     return estudiantes
@@ -210,7 +210,7 @@ def construir_dataset(anios: list[str], trimestres: list[str]):
     estudiantes = []
     for base, base_p1 in zip(data[:-1], data_individuos[1:]):
         _base = generar_deserto(base, base_p1)
-        estudiantes.append(_base)
+        estudiantes.append(_base[_base.TRIMESTRE != 4])
     return estudiantes
 
 
@@ -220,3 +220,7 @@ if __name__ == '__main__':
     for df, name in zip(datos, names):
         path = '~/desercion_escolar_argentina/data/preprocessed/' + name + '.csv'
         df.to_csv(path)
+    
+    data = pd.concat(datos)
+    data_path = '~/desercion_escolar_argentina/data/preprocessed/preprocessed.csv'
+    data.to_csv(data_path)

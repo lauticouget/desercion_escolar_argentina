@@ -54,21 +54,24 @@ def filtrar_por_columnas(data: pd.DataFrame,
     return data_filtrada
 
 
-def eliminar_duplicados(base_datos: pd.DataFrame, lista_bases_comparar: list) -> pd.DataFrame:
-    """Elimina los individuos duplicados entre la base de datos y las bases de datos de la lista.
+def remover_duplicados(lista_df: list[pd.DataFrame]):
+    if len(lista_df) < 2:
+        raise ValueError("La lista debe tener al menos dos DataFrames.")
 
-    Parámetros:
-        base_datos (pd.DataFrame): Base de datos principal que se va a comparar y modificar.
-        lista_bases_comparar (list): Lista de bases de datos que se van a usar para eliminar duplicados.
+    result_df = lista_df[0]
 
-    Retorna:
-        pd.DataFrame: Base de datos resultante después de eliminar duplicados.
-    """
-    base_depurada = base_datos.copy()
+    # iterar sobre los siguientes dataframes
+    for df in lista_df[1:]:
+        # unir los dataframes
+        result_df = pd.merge(result_df, df[['CODUSU', 'NRO_HOGAR', 'COMPONENTE']], 
+                             on=['CODUSU', 'NRO_HOGAR', 'COMPONENTE'], 
+                             how='left', indicator=True)
 
-    for otras_bd in lista_bases_comparar:
-        base_depurada = base_depurada.merge(otras_bd[['CODUSU', 'NRO_HOGAR', 'COMPONENTE']],
-                                            how='left', indicator=True).\
-            query('_merge == "left_only"').drop(columns=['_merge'])
+        # Filtrar filas a izquierda
+        result_df = result_df[result_df['_merge'] == 'left_only']
 
-    return base_depurada
+        # droppear columna _merge
+        result_df = result_df.drop('_merge', axis=1)
+
+    return result_df
+

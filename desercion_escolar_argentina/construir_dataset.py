@@ -150,6 +150,18 @@ def generar_nbi_cobertura_previsional(data: pd.DataFrame):
         data, 'NBI_COBERTURA_PREVISIONAL', cond)
     return estudiantes
 
+def generar_deserto(data_t: pd.DataFrame,
+                    individuos_tp1: pd.DataFrame)->pd.DataFrame:
+    cols_tp1 = ['CODUSU', 'NRO_HOGAR', 'COMPONENTE'] + ['CH10']
+    data = pd.merge(data_t, individuos_tp1[cols_tp1], 
+                    on=['CODUSU', 'NRO_HOGAR', 'COMPONENTE'],
+                    suffixes=('', '_fin'),
+                    how='left')
+    cond = (data.CH10 == 1) & (data.CH10_fin == 2 )
+    estudiantes = pr.crear_feature_binaria(data, 'DESERTO', cond)
+    estudiantes.drop(['CH10_fin'], axis=1, inplace=True)
+    return estudiantes
+
 
 def construir_dataset(anios: list[str], trimestres: list[str]):
     data, data_individuos, data_hogares = obtener_datos(anios, trimestres)
@@ -194,7 +206,12 @@ def construir_dataset(anios: list[str], trimestres: list[str]):
         print('NBI_ZONA_VULNERABLE.')
         _base = generar_nbi_zona_vulnerable(_base)
         data.append(_base)
-    return data
+    
+    estudiantes = []
+    for base, base_p1 in zip(data[:-1], data_individuos[1:]):
+        _base = generar_deserto(base, base_p1)
+        estudiantes.append(_base)
+    return estudiantes
 
 
 if __name__ == '__main__':

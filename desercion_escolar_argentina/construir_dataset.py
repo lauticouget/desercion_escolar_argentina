@@ -5,6 +5,7 @@ from utils import limpieza as l
 import pandas as pd
 import numpy as np
 import pyeph
+import os
 
 
 def obtener_datos(anios: list[int], trimestres: list[int]):
@@ -213,14 +214,21 @@ def construir_dataset(anios: list[str], trimestres: list[str]):
         estudiantes.append(_base[_base.TRIMESTRE != 4])
     return estudiantes
 
+def get_repo_path():
+    file_path = os.path.dirname(__file__)
+    repo_path = os.path.dirname(file_path)
+    return repo_path
+
 
 if __name__ == '__main__':
     datos = construir_dataset(anios=[2021, 2022], trimestres=[2, 3, 4])
     names = ['data212', 'data213', 'data214', 'data222', 'data223', 'data224']
+    repo_path = get_repo_path()
+    pr_path = os.path.join(repo_path, 'data', 'preprocessed')
     for df, name in zip(datos, names):
-        path = '~/desercion_escolar_argentina/data/preprocessed/' + name + '.csv'
+        path = os.path.join(pr_path, name + '.csv')
         df.to_csv(path)
     
     data = pd.concat(datos)
-    data_path = '~/desercion_escolar_argentina/data/preprocessed/preprocessed.csv'
+    data_path = os.path.join(pr_path, 'preprocessed_dataset.py')
     data.to_csv(data_path)

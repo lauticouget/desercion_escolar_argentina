@@ -166,3 +166,5 @@ cython_debug/
 .workspace
 **/.vscode/
 
+# catboost
+catbost_info/

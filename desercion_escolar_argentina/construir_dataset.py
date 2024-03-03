@@ -230,5 +230,9 @@ if __name__ == '__main__':
         df.to_csv(path)
 
     data = pd.concat(datos)
+<<<<<<< HEAD
     data_path = os.path.join(pr_path, "preprocessed_dataset.csv")
+=======
+    data_path = os.path.join(pr_path, 'preprocessed_dataset.csv')
+>>>>>>> 69ab6b1 (train_validate_test: arreglo nombre de archivo preprocessed_dataset.py a .csv)
     data.to_csv(data_path)

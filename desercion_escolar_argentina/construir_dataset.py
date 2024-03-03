@@ -228,7 +228,7 @@ if __name__ == '__main__':
     for df, name in zip(datos, names):
         path = os.path.join(pr_path, name + '.csv')
         df.to_csv(path)
-    
+
     data = pd.concat(datos)
-    data_path = os.path.join(pr_path, 'preprocessed_dataset.py')
+    data_path = os.path.join(pr_path, "preprocessed_dataset.csv")
     data.to_csv(data_path)

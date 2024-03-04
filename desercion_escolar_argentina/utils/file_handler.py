@@ -1,5 +1,6 @@
 import pyeph
 import pandas as pd
+import os
 
 def obtener_eph(tipo: str, anio: int, periodo: int) -> pd.DataFrame:
     
@@ -20,3 +21,8 @@ def obtener_eph(tipo: str, anio: int, periodo: int) -> pd.DataFrame:
         print(f"Error obteniendo base de datos para {tipo}, año {anio}, periodo {periodo}: {e}")
         return pd.DataFrame()
 
+def get_repo_path():
+    file_path = os.path.dirname(__file__)
+    utils_path = os.path.dirname(file_path)
+    repo_path = os.path.dirname(utils_path)
+    return repo_path

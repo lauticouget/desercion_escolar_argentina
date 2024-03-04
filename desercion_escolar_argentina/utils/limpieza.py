@@ -52,26 +52,3 @@ def filtrar_por_columnas(data: pd.DataFrame,
         lista_columnas = data.columns
     data_filtrada = data.query(filtro)[lista_columnas]
     return data_filtrada
-
-
-def remover_duplicados(lista_df: list[pd.DataFrame]):
-    if len(lista_df) < 2:
-        raise ValueError("La lista debe tener al menos dos DataFrames.")
-
-    result_df = lista_df[0]
-
-    # iterar sobre los siguientes dataframes
-    for df in lista_df[1:]:
-        # unir los dataframes
-        result_df = pd.merge(result_df, df[['CODUSU', 'NRO_HOGAR', 'COMPONENTE']], 
-                             on=['CODUSU', 'NRO_HOGAR', 'COMPONENTE'], 
-                             how='left', indicator=True)
-
-        # Filtrar filas a izquierda
-        result_df = result_df[result_df['_merge'] == 'left_only']
-
-        # droppear columna _merge
-        result_df = result_df.drop('_merge', axis=1)
-
-    return result_df
-

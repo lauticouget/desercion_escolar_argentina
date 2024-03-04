@@ -29,11 +29,11 @@ def generar_dataframes_auxiliares(data: pd.DataFrame, hogares: pd.DataFrame):
     jefxs = data[data.CH03 == 1]
     conyuges = data[data.CH03 == 2]
     # hogares por estado de ocupación del jefx
-    _jefxs = pd.merge(jefxs, hogares[l.cols_id_hogar], how='outer')
+    _jefxs = pd.merge(jefxs, hogares[l.cols_id_hogar], how='left')
     hogares_jefxs = pd.DataFrame(_jefxs.groupby(l.cols_id_hogar)[[
         'CH04', 'CH06', 'ESTADO', 'NIVEL_ED', 'PP02E', 'CAT_OCUP', 'PP07I', 'PP07H', 'PP04B1']].sum()).reset_index()
     # hogares no monoparentales según género y ocupación del cónyuge
-    _conyuges = pd.merge(conyuges, hogares[l.cols_id_hogar], how='outer')
+    _conyuges = pd.merge(conyuges, hogares[l.cols_id_hogar], how='left')
     hogares_conyuges = pd.DataFrame(_conyuges.groupby(l.cols_id_hogar)[[
         'CH04', 'ESTADO']].sum()).reset_index()
     return hogares_jefxs, hogares_conyuges
@@ -47,7 +47,7 @@ def unir_jefxs_conyuges(data: pd.DataFrame,
                                      sufijos=('', '_jefx'))
     estudiantes = pr.unir_personas_hogares(_data,
                                            hogares_conyuges,
-                                           como='left',
+                                           como='outer',
                                            sufijos=('', '_conyuge'))
     return estudiantes
 

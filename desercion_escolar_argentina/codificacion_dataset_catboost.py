@@ -95,22 +95,34 @@ df_categoricas_no_binarias = convert_cat_nominal_features(
 # Tratamiento de categoricas ordinales
 
 
-def convert_cat_ordinal_features(df, columns):
+def convert_cat_ordinal_features(df, columns, fill_value=None, non_numeric_code=-9999):
     df_ordinales = df[columns].copy()
 
-    # Conevertir a categorica
-    df_ordinales = df_ordinales[columns].astype(
-        'category')
+    # Imputar NaN con fill_value si se especifica
+    if fill_value is not None:
+        df_ordinales.fillna(fill_value, inplace=True)
+
+    # Convertir a categórica y categorizar con números enteros
+    for col in columns:
+        df_ordinales[col] = pd.to_numeric(
+            df_ordinales[col], errors='coerce')  # Convertir a numérico
+        # Máscara para valores no numéricos
+        non_numeric_mask = df_ordinales[col].isnull()
+        # Reemplazar valores no numéricos con código específico
+        df_ordinales.loc[non_numeric_mask, col] = non_numeric_code
+        df_ordinales[col] = df_ordinales[col].astype(int)  # Convertir a entero
 
     return df_ordinales
+
+# Aplicar la función a las columnas ordinales
 
 
 columnas_cat_ordinales = ['II8', 'IV6', 'IV7', 'IV9', 'IV10', 'IV11', 'CH08', 'TRIMESTRE', 'CAT_OCUP', 'DECINDR',
                           'NIVEL_ED', 'IV1', 'IV3', 'IV4', 'II7', 'DECCFR', 'ESTADO_jefx', 'NIVEL_ED_jefx',
                           'CAT_OCUP_jefx', 'ANO4', 'II9', 'ESTADO_conyuge']
 
-df_ordinales = convert_cat_ordinal_features(
-    df, columnas_cat_ordinales)
+df_ordinales_cleaned = convert_cat_ordinal_features(
+    df, columnas_cat_ordinales, fill_value=np.nan)
 
 
 # Tratamiento de numericas: se identifican NaNs se imputa la media y se escala con una estandarizaciòndelo datos
@@ -153,7 +165,7 @@ if __name__ == '__main__':
     try:
         # Lista de dataframes
         dataframes = [
-            df_categoricas_no_binarias, df_binarias, df_ordinales,
+            df_categoricas_no_binarias, df_binarias, df_ordinales_cleaned,
             df_numericas]
 
         # Concatenar los dataframes

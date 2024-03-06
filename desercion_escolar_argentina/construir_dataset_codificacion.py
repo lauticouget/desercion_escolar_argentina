@@ -75,7 +75,7 @@ def convert_cat_nominal_features(df, columns):
 
     # Crear variables dummy
     df_nominales_no_binarias = pd.get_dummies(
-        df_nominales_no_binarias, columns=columns)
+        df_nominales_no_binarias, columns=columns, drop_first=True)
 
     return df_nominales_no_binarias
 

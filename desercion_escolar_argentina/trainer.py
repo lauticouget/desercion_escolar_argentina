@@ -17,7 +17,8 @@ cols = [
 
 repo_path = fh.get_repo_path()
 data_path = os.path.join(repo_path, 'data', 'preprocessed', 'preprocessed_dataset.csv')
-data = pd.read_csv(data_path)[cols].dropna()
+data = pd.read_csv(data_path)[cols].fillna(0)
+print(data.shape)
 
 X = data.loc[:, data.columns != 'DESERTO']
 y = data.loc[:, data.columns == 'DESERTO']
@@ -30,7 +31,7 @@ logisticRegr = LogisticRegression(max_iter=10000)
 logisticRegr.fit(x_train, y_train)
 # performance
 y_pred = logisticRegr.predict(x_test)
-print('El accuracy de nuestra regresión logística en el set de test es: {:.2f}'.format(logisticRegr.score(x_test, y_test)))
+print(f'El accuracy de nuestra regresión logística en el set de test es: {logisticRegr.score(x_test, y_test):.2f}')
 
 confusion_matrix = confusion_matrix(y_test, y_pred)
 class_names = ['desertó', 'no desertó']

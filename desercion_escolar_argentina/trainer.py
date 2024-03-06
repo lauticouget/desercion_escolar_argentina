@@ -59,21 +59,21 @@ result_path = os.path.join(repo_path, 'models')
 results.to_csv(os.path.join(result_path, 'results.csv'))
 print(model.best_estimator_)
 
-# # instancia del modelo
-# logisticRegr = LogisticRegression(max_iter=10000)
-# # entrenamiento
-# logisticRegr.fit(X_train, y_train)
-# # performance
-# y_pred = logisticRegr.predict(X_test)
-# print(f'El accuracy de nuestra regresión logística en el set de test es: {logisticRegr.score(X_test, y_test):.2f}')
+# mejor modelo
+best = model.best_estimator_
+# entrenamiento
+best.fit(X_train, y_train)
+# performance
+y_pred = best.predict(X_test)
+print(f'El accuracy del mejor modelo en el set de test es: {best.score(X_test, y_test):.2f}')
 
-# confusion_matrix = confusion_matrix(y_test, y_pred)
-# class_names = ['desertó', 'no desertó']
+confusion_matrix = confusion_matrix(y_test, y_pred)
+class_names = ['No desertó', 'Desertó']
 
-# Display = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labels=class_names)
+Display = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labels=class_names)
 
-# Display.plot(cmap=plt.cm.Blues)
-# plt.title('Matriz de confusión/deserción escolar')
-# plt.show()
+Display.plot(cmap=plt.cm.Blues)
+plt.title('Matriz de confusión (KNClassifier(n_neighbors=8))')
+plt.show()
 
-# print(Display.confusion_matrix)
+print(Display.confusion_matrix)

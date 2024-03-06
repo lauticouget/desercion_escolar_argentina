@@ -23,36 +23,37 @@ def is_binary_column(values):
     return unique_values.issubset({0, 1, 4.0, 9.0, 0.0, 1.0})
 
 
-def convert_binary_features(df, columns):
+def convert_binary_features(df, columns,  fill_value=None):
     df_nominales_binarias = df[columns].copy()
 
     # Reemplazar valores categorizados con numeros (-9, 4) como faltantes por 0
     for col in columns:
         if is_binary_column(df_nominales_binarias[col]):
-            # replace_dict = {9.0: np.nan, 4.0: np.nan}
-            replace_dict = {9.0: 0, 4.0: 0}
+            replace_dict = {9.0: np.nan, 4.0: np.nan}
+
         else:
             replace_dict = {}
             if df_nominales_binarias[col].dtype == 'object':
-                replace_dict.update(
-                    {'1': 1, '2': 0, '9.0': 0, '4.0': 0, 'S': 0, 'N': 1, 'NO': 1})
+                replace_dict.update({'1': 1, '2': 0, '9.0': np.nan, '4.0': np.nan,
+                                     'S': 0, 'N': 1, 'NO': 1})
             elif df_nominales_binarias[col].dtype == 'int64':
-                replace_dict.update({1: 1, 2: 0, 9: 0, 4: 0})
+                replace_dict.update({1: 1, 2: 0, 9: np.nan, 4: np.nan})
 
             elif df_nominales_binarias[col].dtype == 'float64':
                 replace_dict.update(
-                    {1.0: 1.0, 2.0: 0.0, 9.0: 0.0, 4.0: 0.0})
+                    {1.0: 1.0, 2.0: 0.0, 9.0: np.nan, 4.0: np.nan})
 
         df_nominales_binarias[col] = df_nominales_binarias[col].replace(
             replace_dict)
 
     # Reemplazar los NaN en las columnas 'PP07I', 'PP07H', 'PP04B1' con 0
     df_nominales_binarias[['PP07I', 'PP07H', 'PP04B1']] = df_nominales_binarias[[
-        'PP07I', 'PP07H', 'PP04B1']].fillna(0)
+        'PP07I', 'PP07H', 'PP04B1']].fillna(np.nan)
 
     return df_nominales_binarias
 
 
+# Aplicar la función a las columnas binarias
 columnas_binarias = [
     'H15', 'CH11', 'PP02H', 'PP07I', 'PP07H', 'PP04B1', 'REALIZADA', 'IV5', 'IV8',
     'IV12_1', 'IV12_2', 'IV12_3', 'II3', 'II4_1', 'II4_2', 'II4_3', 'V1', 'V2',
@@ -65,13 +66,16 @@ columnas_binarias = [
     'MAS_500', 'CH04'
 ]
 
-df_binarias = convert_binary_features(df, columnas_binarias)
+df_binarias = convert_binary_features(df, columnas_binarias, fill_value=-1)
 
 # Tratamiento de categoricas nominales multiclase: se pasan a dummies
 
 
-def convert_cat_nominal_features(df, columns):
+def convert_cat_nominal_features(df, columns, fill_value=None):
     df_nominales_no_binarias = df[columns].copy()
+
+    # Imputar NaN con fill_value
+    df_nominales_no_binarias.fillna(fill_value, inplace=True)
 
     # Crear variables dummy
     df_nominales_no_binarias = pd.get_dummies(
@@ -80,18 +84,46 @@ def convert_cat_nominal_features(df, columns):
     return df_nominales_no_binarias
 
 
+# Aplicar la función a las columnas nominales
 columnas_cat_nominales = [
     'REGION', 'CH03', 'CH07', 'CH15', 'CH16',
     'ESTADO', 'CAT_INAC', 'PP02E', 'PP02E_jefx'
 ]
 
-df_categoricas_no_binarias = convert_cat_nominal_features(
-    df, columnas_cat_nominales)
+df_nominales_no_binarias = convert_cat_nominal_features(
+    df, columnas_cat_nominales, fill_value=-1)
+
 
 # Tratamiento de categoricas nominales multiclase especiales: se dejan sin cambios
 
 columnas_nominales = ['NRO_HOGAR', 'COMPONENTE', 'AGLOMERADO']
 df_columnas_nominales = df[columnas_nominales].copy()
+
+# Tratamiento de categoricas ordinales
+
+
+def convert_cat_ordinal_features(df, columns, fill_value=None):
+    df_ordinales = df[columns].copy()
+
+    # Imputar NaN con fill_value si se especifica
+    if fill_value is not None:
+        df_ordinales.fillna(fill_value, inplace=True)
+
+    # Convertir a categorica y categorizar con números enteros
+    for col in columns:
+        df_ordinales[col] = df_ordinales[col].astype('category').cat.codes
+
+    return df_ordinales
+
+
+# Aplicar la función a las columnas ordinales
+columnas_cat_ordinales = ['II8', 'IV6', 'IV7', 'IV9', 'IV10', 'IV11', 'CH08', 'TRIMESTRE', 'CAT_OCUP', 'DECINDR',
+                          'NIVEL_ED', 'IV1', 'IV3', 'IV4', 'II7', 'DECCFR', 'ESTADO_jefx', 'NIVEL_ED_jefx',
+                          'CAT_OCUP_jefx', 'ANO4', 'II9', 'ESTADO_conyuge']
+
+df_ordinales = convert_cat_ordinal_features(
+    df, columnas_cat_ordinales, fill_value=-1)
+
 
 # Tratamiento de numericas: se identifican NaNs se imputa en principio la media y se escala con una estandarizaciòndelo datos
 
@@ -118,6 +150,7 @@ def convert_numeric_features(df, columns):
     return df_numericas_scaled
 
 
+# Aplicar la función a las columnas numericas
 columnas_numericas = ['PONDERA', 'CH06', 'T_VI', 'V2_M', 'IV2', 'II1', 'II2',
                       'IX_TOT', 'IX_MEN10', 'IX_MAYEQ10', 'ITF', 'CH06_jefx', 'ratio_ocupados']
 
@@ -129,8 +162,8 @@ df_numericas = convert_numeric_features(df, columnas_numericas)
 if __name__ == '__main__':
     try:
         # Lista de dataframes
-        dataframes = [df_columnas_nominales,
-                      df_categoricas_no_binarias, df_binarias, df_numericas]
+        dataframes = [df_columnas_nominales, df_nominales_no_binarias,
+                      df_binarias, df_ordinales, df_numericas]
 
         # Concatenar los dataframes
         data = pd.concat(dataframes, axis=1)

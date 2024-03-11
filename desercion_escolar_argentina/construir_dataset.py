@@ -1,11 +1,12 @@
-from desercion_escolar_argentina.utils import file_handler as fh
-from utils import preprocesado as pr
-from utils import limpieza as l
+import os
 
 import pandas as pd
 import numpy as np
 import pyeph
-import os
+
+from desercion_escolar_argentina.utils import file_handler as fh
+from utils import preprocesado as pr
+from utils import limpieza as l
 
 
 def obtener_datos(anios: list[int], trimestres: list[int]):

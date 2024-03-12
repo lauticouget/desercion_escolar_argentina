@@ -72,21 +72,28 @@ columnas_binarias = [
 df_binarias = convert_binary_features(df, columnas_binarias)
 
 # Tratamiento de categoricas nominales multiclase: se pasan a dummies
+# Tratamiento de categoricas nominales multiclase: se pasan a dummies
 
 
 def convert_cat_nominal_features(df, columns):
     df_nominales_no_binarias = df[columns].copy()
 
-    # Conevertir a categorica
-    df_nominales_no_binarias = df_nominales_no_binarias[columns].astype(
-        'category')
+    for col in columns:
+        # Reemplazar valores 9 por -999
+        if col in ['CH16', 'CH15', 'CH07']:
+            df_nominales_no_binarias[col] = df_nominales_no_binarias[col].replace(
+                {9: np.nan})
+        # Conevertir a integer
+        df_nominales_no_binarias = df_nominales_no_binarias[columns].astype(
+            'category')
 
     return df_nominales_no_binarias
 
 
 columnas_cat_nominales = [
-    'NRO_HOGAR', 'COMPONENTE', 'AGLOMERADO', 'REGION', 'CH03',
-    'CH07', 'CH15', 'CH16', 'ESTADO', 'CAT_INAC', 'PP02E', 'PP02E_jefx'
+    'NRO_HOGAR', 'COMPONENTE', 'REGION', 'CH03',
+    'CH07', 'CH15', 'CH09', 'CH16', 'ESTADO', 'ESTADO_jefx', 'ESTADO_conyuge',
+    'CAT_INAC', 'PP02E', 'PP02E_jefx'
 ]
 
 df_categoricas_no_binarias = convert_cat_nominal_features(
@@ -95,7 +102,7 @@ df_categoricas_no_binarias = convert_cat_nominal_features(
 # Tratamiento de categoricas ordinales
 
 
-def convert_cat_ordinal_features(df, columns, fill_value=None, non_numeric_code=-9999):
+def convert_cat_ordinal_features(df, columns, fill_value=None, non_numeric_code=-999):
     df_ordinales = df[columns].copy()
 
     # Imputar NaN con fill_value si se especifica
@@ -118,12 +125,47 @@ def convert_cat_ordinal_features(df, columns, fill_value=None, non_numeric_code=
 
 
 columnas_cat_ordinales = ['II8', 'IV6', 'IV7', 'IV9', 'IV10', 'IV11', 'CH08', 'TRIMESTRE', 'CAT_OCUP', 'DECINDR',
-                          'NIVEL_ED', 'IV1', 'IV3', 'IV4', 'II7', 'DECCFR', 'ESTADO_jefx', 'NIVEL_ED_jefx',
-                          'CAT_OCUP_jefx', 'ANO4', 'II9', 'ESTADO_conyuge']
-
+                          'NIVEL_ED', 'IV1', 'IV3', 'IV4', 'II7', 'DECCFR',  'NIVEL_ED_jefx',
+                          'CAT_OCUP_jefx', 'ANO4', 'II9']
 df_ordinales_cleaned = convert_cat_ordinal_features(
     df, columnas_cat_ordinales, fill_value=np.nan)
 
+# Tratamiento de AGLOMERADO: cambia a valor numerico como distancia desde Capital CABA
+
+data_x_y = {
+    'eph_codagl': [13, 29, 31, 25, 34, 7, 26, 15, 4, 91, 18, 23, 30, 12, 20, 93, 8, 14, 6, 5, 3, 9, 22, 36, 38, 38, 10, 19, 2, 32, 17, 33, 27],
+    'eph_aglome': ['Gran Córdoba', 'Gran Tucumán - Tafi Viejo', 'Ushuaia - Rio Grande', 'La Rioja', 'Mar del Plata - Batán', 'Posadas', 'San Luis - El Chorrillo', 'Formosa', 'Gran Rosario', 'Rawson - Trelew', 'Santiago del Estero - La Banda', 'Salta', 'Santa Rosa - Toay', 'Corrientes', 'Rio Gallegos', 'Viedma - Carmen de Patagones', 'Gran Resistencia', 'Concordia', 'Gran Paraná', 'Gran Santa Fe', 'Bahia Blanca - Cerri', 'Comodoro Rivadavia - Rada Tilly', 'Gran Catamarca', 'Rio Cuarto', 'San Nicolas - Villa Constitiución', 'San Nicolas - Villa Constitiución', 'Gran Mendoza', 'Jujuy - Palpalá', 'Gran La Plata', 'CABA', 'Neuquén - Plottier', 'Partidos del GBA', 'Gran San Juan'],
+    'x': [3.668196e+06, 3.575528e+06, 3.368650e+06, 3.433735e+06, 4.238702e+06, 4.500828e+06, 3.470658e+06, 4.290676e+06, 3.989413e+06, 3.561793e+06, 3.671129e+06, 3.558820e+06, 3.652175e+06, 4.215852e+06, 3.274586e+06, 3.754150e+06, 4.194276e+06, 4.258864e+06, 4.023207e+06, 4.008905e+06, 3.824880e+06, 3.382300e+06, 3.520630e+06, 3.656809e+06, 4.035477e+06, 4.029783e+06, 3.231898e+06, 3.560475e+06, 4.234043e+06, 4.193488e+06, 3.310530e+06, 4.180647e+06, 3.260047e+06],
+    'y': [6.533650e+06, 7.036009e+06, 3.980855e+06, 6.726538e+06, 5.760505e+06, 6.922012e+06, 6.318389e+06, 7.090830e+06, 6.346344e+06, 5.211965e+06, 6.926946e+06, 7.258796e+06, 5.947417e+06, 6.941437e+06, 4.274342e+06, 5.478764e+06, 6.944114e+06, 6.501289e+06, 6.473109e+06, 6.487715e+06, 5.709612e+06, 4.921987e+06, 6.858955e+06, 6.336869e+06, 6.293741e+06, 6.307894e+06, 6.360832e+06, 7.329096e+06, 6.103368e+06, 6.144082e+06, 5.686581e+06, 6.148549e+06, 6.509854e+06]
+}
+
+df_x_y = pd.DataFrame(data_x_y)
+
+# Crear DataFrame de ejemplo
+columnas_nominales = ['AGLOMERADO']
+df_aglomerado = df[columnas_nominales].copy()
+
+# Agregar columnas temporales 'x_temp' e 'y_temp' a df_aglomerado
+df_aglomerado['x_temp'] = None
+df_aglomerado['y_temp'] = None
+df_aglomerado['DISTANCIA'] = None
+
+# Coordenadas de la capital
+capital_x = 4.193488e+06
+capital_y = 6.144082e+06
+
+for index, row in df_aglomerado.iterrows():
+    eph_codagl = row['AGLOMERADO']
+    matching_row = df_x_y[df_x_y['eph_codagl'] == eph_codagl]
+    if not matching_row.empty:
+        x_temp = matching_row['x'].values[0]
+        y_temp = matching_row['y'].values[0]
+        distancia = np.sqrt((x_temp - capital_x)**2 + (y_temp - capital_y)**2)
+        df_aglomerado.at[index, 'DISTANCIA'] = distancia
+
+# Eliminar columnas temporales 'x_temp' e 'y_temp'
+df_aglomerado['AGLOMERADO'] = df_aglomerado['DISTANCIA']
+df_aglomerado.drop(columns=['x_temp', 'y_temp', 'DISTANCIA'], inplace=True)
 
 # Tratamiento de numericas: se identifican NaNs se imputa la media y se escala con una estandarizaciòndelo datos
 """CatBoost trata los valores NaN como una categoría separada y los procesa. También 
@@ -153,10 +195,15 @@ def convert_numeric_features(df, columns):
     return df_numericas_scaled
 
 
+# Aplicar la función a las columnas numericas
+
 columnas_numericas = ['PONDERA', 'CH06', 'T_VI', 'V2_M', 'IV2', 'II1', 'II2',
                       'IX_TOT', 'IX_MEN10', 'IX_MAYEQ10', 'ITF', 'CH06_jefx', 'ratio_ocupados']
-
 df_numericas = convert_numeric_features(df, columnas_numericas)
+
+columnas_numericas_aglomerado = ['AGLOMERADO']
+df_numericas_aglomerado = convert_numeric_features(
+    df_aglomerado, columnas_numericas_aglomerado)
 
 
 # Armado y guardado del dataframe final
@@ -166,7 +213,7 @@ if __name__ == '__main__':
         # Lista de dataframes
         dataframes = [
             df_categoricas_no_binarias, df_binarias, df_ordinales_cleaned,
-            df_numericas]
+            df_numericas_aglomerado, df_numericas]
 
         # Concatenar los dataframes
         data = pd.concat(dataframes, axis=1)

@@ -94,19 +94,13 @@ def convert_cat_nominal_features(df, columns):
 
 
 columnas_cat_nominales = [
-    'NRO_HOGAR', 'COMPONENTE', 'REGION', 'CH03',
-    'CH07', 'CH15', 'CH09', 'CH16', 'ESTADO', 'ESTADO_jefx', 'ESTADO_conyuge',
+    'REGION', 'CH03', 'CH07', 'CH15', 'CH09',
+    'CH16', 'ESTADO', 'ESTADO_jefx', 'ESTADO_conyuge',
     'CAT_INAC', 'PP02E', 'PP02E_jefx'
 ]
 
 df_categoricas_no_binarias = convert_cat_nominal_features(
     df, columnas_cat_nominales)
-
-
-# Tratamiento de categoricas nominales multiclase especiales: se dejan sin cambios
-
-columnas_nominales = ['NRO_HOGAR', 'COMPONENTE', 'AGLOMERADO']
-df_columnas_nominales = df[columnas_nominales].copy()
 
 # Tratamiento de categoricas ordinales
 

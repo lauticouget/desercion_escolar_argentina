@@ -95,8 +95,8 @@ def convert_cat_nominal_features(df, columns):
 
 # Aplicar la función a las columnas nominales
 columnas_cat_nominales = [
-    'NRO_HOGAR', 'COMPONENTE', 'REGION', 'CH03',
-    'CH07', 'CH15', 'CH09', 'CH16', 'ESTADO', 'ESTADO_jefx', 'ESTADO_conyuge',
+    'REGION', 'CH03', 'CH07', 'CH15', 'CH09',
+    'CH16', 'ESTADO', 'ESTADO_jefx', 'ESTADO_conyuge',
     'CAT_INAC', 'PP02E', 'PP02E_jefx'
 ]
 
@@ -171,10 +171,9 @@ for index, row in df_aglomerado.iterrows():
 # Eliminar columnas temporales 'x_temp' e 'y_temp'
 df_aglomerado['AGLOMERADO'] = df_aglomerado['DISTANCIA']
 df_aglomerado.drop(columns=['x_temp', 'y_temp', 'DISTANCIA'], inplace=True)
-print(df_aglomerado)
-
 
 # Tratamiento de numericas: se identifican NaNs se imputa en principio la media y se escala con una estandarizaciòndelo datos
+
 
 def convert_numeric_features(df, columns):
     df_numericas = df[columns].copy()

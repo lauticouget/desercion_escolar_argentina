@@ -91,8 +91,8 @@ def convert_cat_nominal_features(df, columns):
 
 
 columnas_cat_nominales = [
-    'NRO_HOGAR', 'COMPONENTE', 'REGION', 'CH03',
-    'CH07', 'CH15', 'CH09', 'CH16', 'ESTADO', 'ESTADO_jefx', 'ESTADO_conyuge',
+    'REGION', 'CH03', 'CH07', 'CH15', 'CH09',
+    'CH16', 'ESTADO', 'ESTADO_jefx', 'ESTADO_conyuge',
     'CAT_INAC', 'PP02E', 'PP02E_jefx'
 ]
 

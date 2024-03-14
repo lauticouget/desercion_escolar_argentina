@@ -47,8 +47,8 @@ def convert_binary_features(df, columns):
             replace_dict)
 
     # Reemplazar los NaN en las columnas 'PP07I', 'PP07H', 'PP04B1' con -999
-    df_nominales_binarias[['PP07I', 'PP07H', 'PP04B1']] = df_nominales_binarias[[
-        'PP07I', 'PP07H', 'PP04B1']].fillna(-999)
+    df_nominales_binarias[['PP04B1']
+                          ] = df_nominales_binarias[['PP04B1']].fillna(-999)
 
     # Convertir al tipo category
     df_nominales_binarias[columns] = df_nominales_binarias[columns].astype(
@@ -57,19 +57,22 @@ def convert_binary_features(df, columns):
     return df_nominales_binarias
 
 
+# Aplicar funcion binarias
 columnas_binarias = [
-    'H15', 'CH11', 'PP02H', 'PP07I', 'PP07H', 'PP04B1', 'REALIZADA', 'IV5', 'IV8',
-    'IV12_1', 'IV12_2', 'IV12_3', 'II3', 'II4_1', 'II4_2', 'II4_3', 'V1', 'V2',
-    'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14',
-    'REALIZADA_jefx', 'CH04_jefx', 'PP07I_jefx', 'PP07H_jefx', 'PP04B1_jefx',
-    'REALIZADA_conyuge', 'CH04_conyuge', 'JEFE_TRABAJA', 'CONYUGE_TRABAJA',
-    'JEFA_MUJER', 'HOGAR_MONOP', 'NBI_SUBSISTENCIA', 'NBI_COBERTURA_PREVISIONAL',
+    'H15', 'CH11', 'PP02H', 'PP04B1', 'REALIZADA', 'IV5', 'IV8',
+    'IV12_2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'V1', 'V2',
+    'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'PP07H_jefx', 'PP04B1_jefx',
+    'CONYUGE_TRABAJA', 'JEFA_MUJER', 'HOGAR_MONOP', 'NBI_COBERTURA_PREVISIONAL',
     'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA',
     'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'DESERTO',
     'MAS_500', 'CH04'
 ]
-
 df_binarias = convert_binary_features(df, columnas_binarias)
+
+# Renombrar la columna "PP07H_jefx" a "APORTES_JUBILATORIOS_jefx"
+df_binarias.rename(
+    columns={'PP07H_jefx': 'APORTES_JUBILATORIOS_jefx'}, inplace=True)
+
 
 # Tratamiento de categoricas nominales multiclase: se pasan a dummies
 
@@ -93,17 +96,16 @@ def convert_cat_nominal_features(df, columns):
     return df_nominales_no_binarias
 
 
+# Aplicar la función a las columnas nominales
 columnas_cat_nominales = [
     'REGION', 'CH03', 'CH07', 'CH15', 'CH09',
-    'CH16', 'ESTADO', 'ESTADO_jefx', 'ESTADO_conyuge',
-    'CAT_INAC', 'PP02E', 'PP02E_jefx'
+    'CH16', 'ESTADO', 'ESTADO_jefx', 'ESTADO_conyuge', 'PP02E'
 ]
-
 df_categoricas_no_binarias = convert_cat_nominal_features(
     df, columnas_cat_nominales)
 
-# Tratamiento de categoricas ordinales
 
+# Tratamiento de categoricas ordinales
 
 def convert_cat_ordinal_features(df, columns, fill_value=None, non_numeric_code=-999):
     df_ordinales = df[columns].copy()
@@ -124,13 +126,11 @@ def convert_cat_ordinal_features(df, columns, fill_value=None, non_numeric_code=
 
     return df_ordinales
 
+
 # Aplicar la función a las columnas ordinales
-
-
-columnas_cat_ordinales = ['II8', 'IV6', 'IV7', 'IV9', 'IV10', 'IV11', 'CH08', 'TRIMESTRE', 'CAT_OCUP', 'DECINDR',
-                          'NIVEL_ED', 'IV1', 'IV3', 'IV4', 'II7', 'DECCFR',  'NIVEL_ED_jefx',
-                          'CAT_OCUP_jefx', 'ANO4', 'II9']
-
+columnas_cat_ordinales = ['II8', 'IV6', 'IV7', 'IV9', 'IV11', 'CH08', 'TRIMESTRE', 'DECINDR',
+                          'NIVEL_ED', 'IV1', 'IV3', 'IV4', 'DECCFR',  'NIVEL_ED_jefx',
+                          'ANO4']
 df_ordinales_cleaned = convert_cat_ordinal_features(
     df, columnas_cat_ordinales, fill_value=-999)
 
@@ -170,7 +170,6 @@ for index, row in df_aglomerado.iterrows():
 # Eliminar columnas temporales 'x_temp' e 'y_temp'
 df_aglomerado['AGLOMERADO'] = df_aglomerado['DISTANCIA']
 df_aglomerado.drop(columns=['x_temp', 'y_temp', 'DISTANCIA'], inplace=True)
-print(df_aglomerado)
 
 
 # Tratamiento de numericas: se identifican NaNs se imputa en principio la media y se escala con una estandarizaciòndelo datos
@@ -180,7 +179,7 @@ def convert_numeric_features(df, columns):
 
     for col in columns:
         # Reemplazar valores -9 y 99 por NaN
-        if col in ['T_VI', 'V2_M', 'IV2', 'II1', 'II2']:
+        if col in ['V2_M', 'IV2', 'II2']:
             df_numericas[col] = df_numericas[col].replace(
                 {-9: np.nan, 99: np.nan})
 
@@ -198,7 +197,7 @@ def convert_numeric_features(df, columns):
 
 
 # Aplicar la función a las columnas numericas
-columnas_numericas = ['PONDERA', 'CH06', 'T_VI', 'V2_M', 'IV2', 'II1', 'II2',
+columnas_numericas = ['PONDERA', 'CH06', 'T_VI', 'V2_M', 'IV2', 'II2',
                       'IX_TOT', 'IX_MEN10', 'IX_MAYEQ10', 'ITF', 'CH06_jefx', 'ratio_ocupados']
 df_numericas = convert_numeric_features(df, columnas_numericas)
 

@@ -28,9 +28,8 @@ def _resample(df, target_col, kind='up'):
     return None
 
 cols = [
-        'CH03', 'CH04', 'CH06', 'CH07', 'CH08', 'CH09', 'CH10', 'CH11', 'CH15', 'CH16', 'ESTADO', 'CAT_OCUP', 'CAT_INAC', 'PP02E', 'PP02H', 'PP07I', 'PP07H', 'PP04B1', 'DECINDR', 'T_VI', 'NIVEL_ED', 'V2_M', 'NBI_SUBSISTENCIA', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL',
-        'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA',
-        'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'HOGAR_MONOP', 'IX_TOT', 'IX_MEN10', 'IX_MAYEQ10', 'DESERTO'
+        'CH03', 'CH04', 'CH06', 'CH07', 'CH08', 'CH09', 'CH11', 'CH15', 
+        'CH16', 'ESTADO', 'PP02E', 'PP02H', 'PP04B1', 'NIVEL_ED', 'IV1', 'IV2', 'IV6', 'IV7', 'IV9', 'IV11', 'IV12_2', 'II1', 'II2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'II8', 'II9', 'V1', 'V2', 'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'IX_TOT', 'IX_MEN10', 'IX_MAYEQ10', 'DECCFR', 'CH06_jefx', 'ESTADO_jefx', 'NIVEL_ED_jefx', 'PP07I_jefx', 'PP07H_jefx', 'PP04B1_jefx', 'ESTADO_conyuge', 'JEFA_MUJER', 'HOGAR_MONOP', 'ratio_ocupados', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA', 'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'DESERTO'
 ]
 
 repo_path = fh.get_repo_path()
@@ -45,31 +44,38 @@ y = data.loc[:, data.columns == 'DESERTO'].values.ravel()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=99, stratify=y)
 
 pipeline = Pipeline([
-    ('classifier', LogisticRegression)
+    ('classifier', LogisticRegression())
 ])
 
-params = {
-    
-}
-
+n_samples = len(data.DESERTO)
+n_classes = data.DESERTO.nunique()
+balanced = n_samples / (n_classes * np.bincount(data.DESERTO))
+weights = np.linspace(0., balanced)
+class_weights = [{0: x[0], 1: x[1]} for x in weights]
 param_grid = [
     {'classifier': [KNeighborsClassifier()],
-     'classifier__n_neighbors': range(2, 10)},
+     'classifier__n_neighbors': range(2, 15),
+     'classifier__weights': ['uniform', 'distance']},
     {'classifier': [DecisionTreeClassifier()],
      'classifier__max_depth': range(8, 36, 2),
-     'classifier__criterion': ['gini', 'entropy']},
+     'classifier__criterion': ['gini', 'entropy'],
+     'classifier__class_weight': class_weights},
     {'classifier': [RandomForestClassifier()],
-     'classifier__n_estimators': range(8, 36, 4),
-     'classifier__criterion': ['gini', 'entropy']},
-    {'classifier': [BaggingClassifier()],
-      'classifier__n_estimators': range(2, 20, 2)},
-    {'classifier': [CatBoostClassifier()],
-     'classifier__iterations': [100, 200, 300],
-     'classifier__depth': range(4, 10),
-     'classifier__verbose': [False]}
+     'classifier__n_estimators': range(8, 36, 2),
+     'classifier__criterion': ['gini', 'entropy'],
+     'classifier__class_weight': class_weights},
+    {'classifier': [BaggingClassifier(estimator=DecisionTreeClassifier())],
+     'classifier__n_estimators': range(2, 20, 2),
+     'classifier__estimator__class_weight': class_weights,
+     'classifier__estimator__criterion': ['gini', 'entropy'],
+     'classifier__estimator__max_depth': range(8, 36, 4)}
+    # {'classifier': [CatBoostClassifier()],
+    #  'classifier__iterations': [100, 200, 300],
+    #  'classifier__depth': range(4, 10),
+    #  'classifier__verbose': [False]}
 ]
 
-model = GridSearchCV(pipeline, param_grid, scoring='recall', cv=5)
+model = GridSearchCV(pipeline, param_grid, scoring=['recall', 'f1'], cv=5, verbose=2, refit='f1')
 model.fit(X_train, y_train)
 results=pd.DataFrame(model.cv_results_)
 result_path = os.path.join(repo_path, 'models')
@@ -92,4 +98,16 @@ Display = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labe
 
 Display.plot(cmap=plt.cm.Blues)
 plt.title(f'Matriz de confusión {best})')
+plt.show()
+
+importances = best.named_steps['classifier'].feature_importances_
+feature_importances = pd.Series(importances, index=data.columns[:-1])
+feature_importances.sort_values(ascending=True, inplace=True)
+print(feature_importances[-20:])
+
+fig, ax = plt.subplots()
+feature_importances.plot(kind='barh', ax=ax)
+ax.set_title("Feature importances using MDI")
+ax.set_ylabel("Mean decrease in impurity")
+fig.tight_layout()
 plt.show()

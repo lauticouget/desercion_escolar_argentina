@@ -176,41 +176,27 @@ def construir_dataset(anios: list[str], trimestres: list[str]):
     estudiantes = [l.filtrar_por_columnas(base, cond) for base in data]
     # ingenieria de atributos
     data = []
+    print('Generando variables')
     for base, individuos, hogares in zip(estudiantes, data_individuos, data_hogares):
-        print('Generando dataframes auxiliares de jefxs y cónyuges.')
         jefxs, conyuges = generar_dataframes_auxiliares(individuos, hogares)
         _base = unir_jefxs_conyuges(base, jefxs, conyuges)
-        print('Generando variable JEFX_TRABAJA.')
         _base = generar_jefe_trabaja(_base)
-        print('Generando variable CONYUGE_TRABAJA.')
         _base = generar_conyuge_trabaja(_base)
-        print('Generando variable JEFA_MUJER.')
         _base = generar_jefa_mujer(_base)
-        print('Generando variable HOGAR_MONOP.')
         _base = generar_hogar_monop(_base)
-        print('Generando variable ratio_ocupado.')
         _base = generar_ratio_ocupados_miembros(_base, individuos, hogares)
-        print('Generando variables NBI.')
-        print('NBI_SUBSISTENCIA.')
         _base = generar_nbi_subsistencia(_base)
-        print('NBI_COBERTURA_PREVISIONAL.')
         _base = generar_nbi_cobertura_previsional(_base)
-        print('NBI_DIFLABORAL.')
         _base = generar_nbi_dificultad_laboral(_base)
-        print('NBI_HACINAMIENTO.')
         _base = generar_nbi_hacinamiento(_base)
-        print('NBI_SANITARIA.')
         _base = generar_nbi_sanitaria(_base)
-        print('NBI_TENENCIA.')
         _base = generar_nbi_tenencia(_base)
-        print('NBI_TRABAJO_PRECARIO.')
         _base = generar_nbi_trabajo_precario(_base)
-        print('NBI_VIVIENDA_PRECARIA.')
         _base = generar_nbi_vivienda_precaria(_base)
-        print('NBI_ZONA_VULNERABLE.')
         _base = generar_nbi_zona_vulnerable(_base)
         data.append(_base)
-    
+        print('*')
+    print('Guardando datos')
     estudiantes = []
     for base, base_p1 in zip(data[:-1], data_individuos[1:]):
         _base = generar_deserto(base, base_p1)
@@ -219,11 +205,10 @@ def construir_dataset(anios: list[str], trimestres: list[str]):
 
 
 def homogeneizar_binarias(df, columns):
-    binarias = df.loc[:, columns]
-    replace_dict = {2: 0, 'S': 1, 'N': 0, 'NO': 0}
-    binarias.replace(replace_dict, inplace=True)
-    binarias.astype('float64', copy=False)
-    return binarias
+    replace_dict = {col: {2: 0, 'S': 1, 'N': 0, 'NO': 0} for col in columnas_binarias}
+    data = df.replace(replace_dict)
+    data[columns].astype('float64', copy=False)
+    return data
 
 
 def aglomerados_a_distancia(df, aglomerado='AGLOMERADO'):
@@ -270,11 +255,13 @@ if __name__ == '__main__':
         'CH11', 'PP02H', 'PP04B1', 'REALIZADA', 'IV5', 'IV12_2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'V1', 'V2', 'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'PP07I_jefx', 'PP07H_jefx', 'PP04B1_jefx', 'CONYUGE_TRABAJA', 'JEFA_MUJER', 'HOGAR_MONOP', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA', 'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'DESERTO', 'MAS_500', 'CH04'
     ]
     data.drop(drop_cols, axis=1, inplace=True)
-    binarias = homogeneizar_binarias(data, columnas_binarias)
-    #PP04B1 --> tratamiento especial
-    pp04b1 = data.loc[:, 'PP04B1'].replace({2: 0, np.nan: 0})
-    pp04b1.rename('servicio_domestico', inplace=True)
-
+    data = homogeneizar_binarias(data, columnas_binarias)
+    #PP04B1 --> renombre a servicio_domestico + reemplazo de valores
+    data.loc[:, 'PP04B1'].replace({2: 0, np.nan: 0}, inplace=True)
+    data.rename({'PP04B1': 'servicio_domestico'}, inplace=True)
+    # variables conyuge --> lleno NaN con ceros pues corresponden a HOGAR_MONOP==1
+    cvars = data.columns.str.endswith('_conyuge')
+    data[cvars] = data.loc[:, cvars].fillna(0)
     data = aglomerados_a_distancia(data)
     data_path = os.path.join(pr_path, 'preprocessed_dataset.csv')
     data.to_csv(data_path, index=False)

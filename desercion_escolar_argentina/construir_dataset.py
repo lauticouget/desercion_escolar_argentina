@@ -261,7 +261,7 @@ if __name__ == '__main__':
     data.rename({'PP04B1': 'servicio_domestico'}, inplace=True)
     # variables conyuge --> lleno NaN con ceros pues corresponden a HOGAR_MONOP==1
     cvars = data.columns.str.endswith('_conyuge')
-    data[cvars] = data.loc[:, cvars].fillna(0)
+    data[data.columns[cvars]] = data.loc[:, cvars].fillna(0)
     data = aglomerados_a_distancia(data)
     data_path = os.path.join(pr_path, 'preprocessed_dataset.csv')
     data.to_csv(data_path, index=False)

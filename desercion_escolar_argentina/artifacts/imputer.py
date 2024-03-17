@@ -14,7 +14,7 @@ cols99 = ['IV2', 'II1']
 
 col12 = ['DECCFR']
 
-def make_imputer(c9, c99, c12):
+def make_imputer(c9 = None, c99 = None, c12 = None):
     if c9 is None:
         c9 = cols9
     if c99 is None:

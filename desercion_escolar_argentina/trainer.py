@@ -15,6 +15,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from desercion_escolar_argentina.utils import file_handler as fh
+from desercion_escolar_argentina.artifacts import imputer as im
+from desercion_escolar_argentina.artifacts import scaler as sc
+from desercion_escolar_argentina.artifacts import encoder as enc
 
 def _resample(df, target_col, kind='up'):
     df_1 = df[df[target_col] == 1]
@@ -29,11 +32,11 @@ def _resample(df, target_col, kind='up'):
 
 cols = [
         'CH03', 'CH04', 'CH06', 'CH07', 'CH08', 'CH09', 'CH11', 'CH15', 
-        'CH16', 'ESTADO', 'PP02E', 'PP02H', 'PP04B1', 'NIVEL_ED', 'IV1', 'IV2', 'IV6', 'IV7', 'IV9', 'IV11', 'IV12_2', 'II1', 'II2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'II8', 'II9', 'V1', 'V2', 'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'IX_TOT', 'IX_MEN10', 'IX_MAYEQ10', 'DECCFR', 'CH06_jefx', 'ESTADO_jefx', 'NIVEL_ED_jefx', 'PP07I_jefx', 'PP07H_jefx', 'PP04B1_jefx', 'ESTADO_conyuge', 'JEFA_MUJER', 'HOGAR_MONOP', 'ratio_ocupados', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA', 'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'DESERTO'
+        'CH16', 'ESTADO', 'PP02E', 'PP02H', 'PP04B1', 'NIVEL_ED', 'IV1', 'IV2', 'IV6', 'IV7', 'IV9', 'IV11', 'IV12_2', 'II1', 'II2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'II8', 'II9', 'V1', 'V2', 'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'IX_TOT', 'IX_MEN10', 'DECCFR', 'CH06_jefx', 'ESTADO_jefx', 'NIVEL_ED_jefx', 'PP07I_jefx', 'PP07H_jefx', 'PP04B1_jefx', 'ESTADO_conyuge', 'JEFA_MUJER', 'HOGAR_MONOP', 'ratio_ocupados', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA', 'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'DESERTO'
 ]
 
 repo_path = fh.get_repo_path()
-data_path = os.path.join(repo_path, 'data', 'preprocessed', 'preprocessed_dataset.csv')
+data_path = os.path.join(repo_path, 'data', 'preprocessed', 'preprocessed_train.csv')
 data = pd.read_csv(data_path)[cols].fillna(0)
 print(f'El shape del dataframe es {data.shape}.')
 
@@ -44,15 +47,21 @@ y = data.loc[:, data.columns == 'DESERTO'].values.ravel()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=99, stratify=y)
 
 pipeline = Pipeline([
+    ('imputer', im.make_imputer()),
+    ('scaler', sc.make_scaler()),
+    ('encoder', enc.make_encoder())
     ('classifier', LogisticRegression())
 ])
 
 n_samples = len(data.DESERTO)
 n_classes = data.DESERTO.nunique()
 balanced = n_samples / (n_classes * np.bincount(data.DESERTO))
-weights = np.linspace(0., balanced)
+weights = np.linspace(0., balanced, 10)
 class_weights = [{0: x[0], 1: x[1]} for x in weights]
 param_grid = [
+    {'classifier': [LogisticRegression(solver='liblinear')],
+     'classifier__penalty': ['passthrough', 'l1'],
+     'classifier__class_weight': class_weights},
     {'classifier': [KNeighborsClassifier()],
      'classifier__n_neighbors': range(2, 15),
      'classifier__weights': ['uniform', 'distance']},
@@ -100,14 +109,14 @@ Display.plot(cmap=plt.cm.Blues)
 plt.title(f'Matriz de confusión {best})')
 plt.show()
 
-importances = best.named_steps['classifier'].feature_importances_
-feature_importances = pd.Series(importances, index=data.columns[:-1])
-feature_importances.sort_values(ascending=True, inplace=True)
-print(feature_importances[-20:])
+# importances = best.named_steps['classifier'].feature_importances_
+# feature_importances = pd.Series(importances, index=data.columns[:-1])
+# feature_importances.sort_values(ascending=True, inplace=True)
+# print(feature_importances[-20:])
 
-fig, ax = plt.subplots()
-feature_importances.plot(kind='barh', ax=ax)
-ax.set_title("Feature importances using MDI")
-ax.set_ylabel("Mean decrease in impurity")
-fig.tight_layout()
-plt.show()
+# fig, ax = plt.subplots()
+# feature_importances.plot(kind='barh', ax=ax)
+# ax.set_title("Feature importances using MDI")
+# ax.set_ylabel("Mean decrease in impurity")
+# fig.tight_layout()
+# plt.show()

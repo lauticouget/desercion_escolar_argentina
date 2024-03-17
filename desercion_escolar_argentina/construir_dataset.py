@@ -255,9 +255,9 @@ if __name__ == '__main__':
     columnas_binarias = [
         'CH11', 'PP02H', 'PP04B1', 'REALIZADA', 'IV5', 'IV12_2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'V1', 'V2', 'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'PP07I_jefx', 'PP07H_jefx', 'PP04B1_jefx', 'CONYUGE_TRABAJA', 'JEFA_MUJER', 'HOGAR_MONOP', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA', 'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'DESERTO', 'MAS_500', 'CH04'
     ]
+    data = data[data.H15==1]
     data.drop(drop_cols, axis=1, inplace=True)
     data = homogeneizar_binarias(data, columnas_binarias)
-    data = data[data.H15==1]
     # PP04B1 --> renombre a servicio_domestico + reemplazo de valores
     data.loc[:, 'PP04B1'].replace({2: 0, np.nan: 0}, inplace=True)
     data.rename({'PP04B1': 'servicio_domestico'}, 
@@ -269,5 +269,5 @@ if __name__ == '__main__':
     cvars = data.columns.str.endswith('_conyuge')
     data[data.columns[cvars]] = data.loc[:, cvars].fillna(0)
     data = aglomerados_a_distancia(data)
-    data_path = os.path.join(pr_path, 'preprocessed_dataset.csv')
+    data_path = os.path.join(pr_path, 'preprocessed_train.csv')
     data.to_csv(data_path, index=False)

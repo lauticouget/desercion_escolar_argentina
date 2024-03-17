@@ -5,17 +5,16 @@ from imblearn.under_sampling import RandomUnderSampler
 from imblearn.under_sampling import AllKNN
 
 # Ver head del preprocessed.csv
-df = pandas.read_csv("data/preprocessed/preprocessed_dataset.csv")
+
+df = pandas.read_csv("data/preprocessed/preprocessed_codificacion.csv")
 print(df.head())
 
 
 # Asigno todas las columnas menos DESERTO como variables explicativas variable_explicada_df a DESERTO como variable explicada
 
-# se extrajo la columna
-df = df.drop(13745, axis="index")
-print(df.value_counts("II8"))
+
 print(df.head())
-variables_explicativas_df = df.drop(["CODUSU", "MAS_500"], axis="columns")
+variables_explicativas_df = df.drop(["MAS_500"], axis="columns")
 print(variables_explicativas_df)
 
 variable_explicada_df = df.loc[:, "DESERTO"]
@@ -43,7 +42,7 @@ for i in range(7):
 
     # Guardo como CSV cada muestra resampleada con el método correspondiente
     df_resampled_oversampled.to_csv(
-        f"data/stage/df_resampled_oversampled_{round(muestra_minoritaria,2)}.csv",
+        f"data/stage/df_resampled_oversampled_escalado_{round(muestra_minoritaria,2)}.csv",
         sep=",",
         index=False,
         encoding="utf-8",
@@ -59,7 +58,7 @@ for i in range(7):
 
     # Guardo como CSV cada muestra resampleada con el método correspondiente
     df_resampled_SMOTE.to_csv(
-        f"data/stage/df_resampled_SMOTE_{round(muestra_minoritaria,2)}.csv",
+        f"data/stage/df_resampled_SMOTE_escalado_{round(muestra_minoritaria,2)}.csv",
         sep=",",
         index=False,
         encoding="utf-8",
@@ -76,7 +75,7 @@ for i in range(7):
 
     # Guardo como CSV cada muestra resampleada con el método correspondiente
     df_resampled_ADASYN.to_csv(
-        f"data/stage/df_resampled_ADASYN_{round(muestra_minoritaria,2)}.csv",
+        f"data/stage/df_resampled_ADASYN_escalado_{round(muestra_minoritaria,2)}.csv",
         sep=",",
         index=False,
         encoding="utf-8",
@@ -92,24 +91,7 @@ for i in range(7):
 
     # Guardo como CSV cada muestra resampleada con el método correspondiente
     df_resampled_undersampled.to_csv(
-        f"data/stage/df_resampled_undersampled_{round(muestra_minoritaria,2)}.csv",
-        sep=",",
-        index=False,
-        encoding="utf-8",
-    )
-
-    # Probamos con un Undersampling AllKNN
-    df_resampled_AllKNN, variable_explicada_df_AllKNN = AllKNN(
-        sampling_strategy=sampling_strategy
-    ).fit_resample(variables_explicativas_df, variable_explicada_df)
-    df_resampled_AllKNN = pandas.DataFrame(df_resampled_AllKNN)
-
-    # Printeo el head para ver como se guardará
-    print(df_resampled_AllKNN.head())
-
-    # Guardo como CSV cada muestra resampleada con el método correspondiente
-    df_resampled_AllKNN.to_csv(
-        f"data/stage/df_resampled_AllKNN_{round(muestra_minoritaria,2)}.csv",
+        f"data/stage/df_resampled_undersampled_escalado_{round(muestra_minoritaria,2)}.csv",
         sep=",",
         index=False,
         encoding="utf-8",
@@ -118,6 +100,22 @@ for i in range(7):
     muestra_minoritaria = muestra_minoritaria + 0.05
     muestra_mayoritaria = muestra_mayoritaria - 0.05
 
+# Probamos con un Undersampling AllKNN
+df_resampled_AllKNN, variable_explicada_df_AllKNN = AllKNN().fit_resample(
+    variables_explicativas_df, variable_explicada_df
+)
+df_resampled_AllKNN = pandas.DataFrame(df_resampled_AllKNN)
+
+# Printeo el head para ver como se guardará
+print(df_resampled_AllKNN.head())
+
+# Guardo como CSV cada muestra resampleada con el método correspondiente
+df_resampled_AllKNN.to_csv(
+    f"data/stage/df_resampled_AllKNN_escalado.csv",
+    sep=",",
+    index=False,
+    encoding="utf-8",
+)
 
 """df2.to_csv(
     "./data/balanceo_de_clases_oversampled.csv",
@@ -146,4 +144,21 @@ df_resampled_oversampled, variable_explicada_df_resampled = (
 clf_ADASYN = LogisticRegression().fit(
     df_resampled_oversampled, variable_explicada_df_resampled
 )
+"""
+""" # Probamos con un Undersampling AllKNN
+    df_resampled_AllKNN, variable_explicada_df_AllKNN = AllKNN(
+        sampling_strategy=sampling_strategy
+    ).fit_resample(variables_explicativas_df, variable_explicada_df)
+    df_resampled_AllKNN = pandas.DataFrame(df_resampled_AllKNN)
+
+    # Printeo el head para ver como se guardará
+    print(df_resampled_AllKNN.head())
+
+    # Guardo como CSV cada muestra resampleada con el método correspondiente
+    df_resampled_AllKNN.to_csv(
+        f"data/stage/df_resampled_AllKNN_escalado_{round(muestra_minoritaria,2)}.csv",
+        sep=",",
+        index=False,
+        encoding="utf-8",
+    )
 """

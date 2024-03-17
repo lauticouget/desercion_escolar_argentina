@@ -49,7 +49,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 pipeline = Pipeline([
     ('imputer', im.make_imputer()),
     ('scaler', sc.make_scaler()),
-    ('encoder', enc.make_encoder())
+    ('encoder', enc.make_encoder()),
     ('classifier', LogisticRegression())
 ])
 

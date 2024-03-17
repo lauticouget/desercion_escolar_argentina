@@ -16,7 +16,9 @@ def make_encoder(cols = None):
     if cols is None:
         cols = columnas_cat_nominales
     ohencoder = make_column_transformer(
-        (OneHotEncoder(drop='first'), cols),
+        (OneHotEncoder(drop='first', 
+                       sparse_output=False,
+                       handle_unknown='infrequent_if_exist'), cols),
         remainder='passthrough',
         verbose_feature_names_out=False
     )

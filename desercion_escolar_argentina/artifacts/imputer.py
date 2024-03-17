@@ -22,13 +22,13 @@ def make_imputer(c9 = None, c99 = None, c12 = None):
     if c12 is None:
         c12 = col12    
     knnimputer = make_column_transformer(
-        (KNNImputer(n_neighbors=1, missing_values=9.), c9),
-        (KNNImputer(n_neighbors=1, missing_values=99.), c99),
-        (KNNImputer(n_neighbors=1, missing_values=12.), c12),
+        (KNNImputer(n_neighbors=1, missing_values=9.).set_output(transform='pandas'), c9),
+        (KNNImputer(n_neighbors=1, missing_values=99.).set_output(transform='pandas'), c99),
+        (KNNImputer(n_neighbors=1, missing_values=12.).set_output(transform='pandas'), c12),
         remainder='passthrough',
         verbose_feature_names_out=False
     )
-    return knnimputer
+    return knnimputer.set_output(transform='pandas')
 
 if __name__ == "__main__":
     repo_path = fh.get_repo_path()

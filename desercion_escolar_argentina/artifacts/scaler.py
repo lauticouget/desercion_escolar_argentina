@@ -16,11 +16,11 @@ def make_scaler(cols = None):
     if cols == None:
         cols = columnas_numericas
     stdscaler = make_column_transformer(
-        (StandardScaler(), cols),
+        (StandardScaler().set_output(transform='pandas'), cols),
         remainder='passthrough',
         verbose_feature_names_out=False   
     )
-    return stdscaler
+    return stdscaler.set_output(transform='pandas')
 
 
 if __name__ == '__main__':

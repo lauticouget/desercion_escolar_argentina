@@ -30,14 +30,14 @@ def _resample(df, target_col, kind='up'):
         return pd.concat(df_1, resampled)
     return None
 
-cols = [
-        'CH03', 'CH04', 'CH06', 'CH07', 'CH08', 'CH09', 'CH11', 'CH15', 
-        'CH16', 'ESTADO', 'PP02E', 'PP02H', 'PP04B1', 'NIVEL_ED', 'IV1', 'IV2', 'IV6', 'IV7', 'IV9', 'IV11', 'IV12_2', 'II1', 'II2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'II8', 'II9', 'V1', 'V2', 'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'IX_TOT', 'IX_MEN10', 'DECCFR', 'CH06_jefx', 'ESTADO_jefx', 'NIVEL_ED_jefx', 'PP07I_jefx', 'PP07H_jefx', 'PP04B1_jefx', 'ESTADO_conyuge', 'JEFA_MUJER', 'HOGAR_MONOP', 'ratio_ocupados', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA', 'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'DESERTO'
+id_cols = [
+    'CODUSU', 'NRO_HOGAR', 'COMPONENTE', 'ANO4', 'TRIMESTRE', 'PONDERA'
 ]
 
 repo_path = fh.get_repo_path()
 data_path = os.path.join(repo_path, 'data', 'preprocessed', 'preprocessed_train.csv')
-data = pd.read_csv(data_path)[cols].fillna(0)
+data = pd.read_csv(data_path)
+data = data.loc[:, ~data.columns.isin(id_cols)]
 print(f'El shape del dataframe es {data.shape}.')
 
 

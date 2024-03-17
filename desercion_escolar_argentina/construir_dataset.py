@@ -245,10 +245,11 @@ if __name__ == '__main__':
     datos = construir_dataset(anios=[2021, 2022], trimestres=[2, 3, 4])
     repo_path = fh.get_repo_path()
     pr_path = os.path.join(repo_path, 'data', 'preprocessed')
-    data = pd.concat(datos)
+    data = pd.concat(datos).query('H15 == 1')
     drop_cols = [
         'IV8', 'IX_MAYEQ10', 'CAT_OCUP', 'CAT_INAC', 'CAT_OCUP_jefx', 'JEFE_TRABAJA', 'T_VI', 'V2_M', 'CH04_conyuge', 'CH04_jefx', 'NBI_SUBSISTENCIA', 'IV10', 'II7', 'IV12_1', 'IV12_3', 'PP07I', 
-        'PP07H', 'PP02E_jefx', 'REALIZADA_jefx', 'REALIZADA_conyuge'
+        'PP07H', 'PP02E_jefx', 'REALIZADA_jefx', 'REALIZADA_conyuge',
+        'REALIZADA', 'H15'
     ]
 
     columnas_binarias = [
@@ -256,9 +257,14 @@ if __name__ == '__main__':
     ]
     data.drop(drop_cols, axis=1, inplace=True)
     data = homogeneizar_binarias(data, columnas_binarias)
-    #PP04B1 --> renombre a servicio_domestico + reemplazo de valores
+    data = data[data.H15==1]
+    # PP04B1 --> renombre a servicio_domestico + reemplazo de valores
     data.loc[:, 'PP04B1'].replace({2: 0, np.nan: 0}, inplace=True)
-    data.rename({'PP04B1': 'servicio_domestico'}, inplace=True)
+    data.rename({'PP04B1': 'servicio_domestico'}, 
+                axis=1, inplace=True)
+    # PP07H_jefx renombre a apotes_jubilatorios_jefx
+    data.rename({'PP07H_jefx': 'APORTES_JUBILATORIOS_jefx'}, 
+                axis=1, inplace=True)
     # variables conyuge --> lleno NaN con ceros pues corresponden a HOGAR_MONOP==1
     cvars = data.columns.str.endswith('_conyuge')
     data[data.columns[cvars]] = data.loc[:, cvars].fillna(0)

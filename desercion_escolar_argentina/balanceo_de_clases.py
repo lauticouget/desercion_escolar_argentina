@@ -1,9 +1,17 @@
+import os 
+
 import pandas
 from imblearn.over_sampling import RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler
 
+from desercion_escolar_argentina.utils import file_handler as fh
 # preprocessed_train
-df = pandas.read_csv("data/preprocessed/preprocessed_train.csv")
+
+repo_path = fh.get_repo_path()
+pr_path = os.path.join(repo_path, 'data/preprocessed/')
+stage_path = os.path.join(repo_path, 'data/stage/')
+train_path = os.path.join(pr_path, 'preprocessed_train.csv')
+df = pandas.read_csv(train_path)
 
 
 # Asigno todas las columnas menos DESERTO como variables explicativas variable_explicada_df a DESERTO como variable explicada
@@ -25,7 +33,7 @@ for i in range(7):
 
     # Guardo como CSV cada muestra resampleada con el método correspondiente
     df_resampled_oversampled.to_csv(
-        f"data/stage/train_oversampled_{round(muestra_minoritaria,2)}.csv",
+        os.path.join(stage_path, f"train_oversampled_{round(muestra_minoritaria,2)}.csv"),
         sep=",",
         index=False,
         encoding="utf-8",
@@ -39,7 +47,7 @@ for i in range(7):
 
     # Guardo como CSV cada muestra resampleada con el método correspondiente
     df_resampled_undersampled.to_csv(
-        f"data/stage/train_undersampled_{round(muestra_minoritaria,2)}.csv",
+        os.path.join(stage_path, f"train_undersampled_{round(muestra_minoritaria,2)}.csv"),
         sep=",",
         index=False,
         encoding="utf-8",

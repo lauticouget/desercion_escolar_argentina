@@ -2,12 +2,15 @@ import os
 
 import pandas as pd
 import numpy as np
+import typer
 import pyeph
 
 from desercion_escolar_argentina.utils import file_handler as fh
-from utils import preprocesado as pr
-from utils import limpieza as l
+from desercion_escolar_argentina.utils import preprocesado as pr
+from desercion_escolar_argentina.utils import limpieza as l
 
+
+app = typer.Typer()
 
 def obtener_datos(anios: list[int], trimestres: list[int]):
     bases_individuos = [fh.obtener_eph(
@@ -167,7 +170,7 @@ def generar_deserto(data_t: pd.DataFrame,
     return estudiantes
 
 
-def construir_dataset(anios: list[str], trimestres: list[str]):
+def data_constructor(anios: list[int], trimestres: list[int]):
     data, data_individuos, data_hogares = obtener_datos(anios, trimestres)
     # estudiantes de edad >=14
     cond_estudiante = 'CH10 == 1'
@@ -176,7 +179,6 @@ def construir_dataset(anios: list[str], trimestres: list[str]):
     estudiantes = [l.filtrar_por_columnas(base, cond) for base in data]
     # ingenieria de atributos
     data = []
-    print('Generando variables')
     for base, individuos, hogares in zip(estudiantes, data_individuos, data_hogares):
         jefxs, conyuges = generar_dataframes_auxiliares(individuos, hogares)
         _base = unir_jefxs_conyuges(base, jefxs, conyuges)
@@ -195,17 +197,20 @@ def construir_dataset(anios: list[str], trimestres: list[str]):
         _base = generar_nbi_vivienda_precaria(_base)
         _base = generar_nbi_zona_vulnerable(_base)
         data.append(_base)
-        print('*')
-    print('Guardando datos')
+    return data, data_individuos
+
+def construir_dataset(data: list[pd.DataFrame], 
+                      data_individuos: list[pd.DataFrame],
+                      ultimo_trimestre: int):
     estudiantes = []
     for base, base_p1 in zip(data[:-1], data_individuos[1:]):
         _base = generar_deserto(base, base_p1)
-        estudiantes.append(_base[_base.TRIMESTRE != 4])
+        estudiantes.append(_base[_base.TRIMESTRE != ultimo_trimestre])
     return estudiantes
 
 
 def homogeneizar_binarias(df, columns):
-    replace_dict = {col: {2: 0, 'S': 1, 'N': 0, 'NO': 0} for col in columnas_binarias}
+    replace_dict = {col: {2: 0, 'S': 1, 'N': 0, 'NO': 0} for col in columns}
     data = df.replace(replace_dict)
     data[columns].astype('float64', copy=False)
     return data
@@ -241,21 +246,32 @@ def aglomerados_a_distancia(df, aglomerado='AGLOMERADO'):
     df_aglomerado.drop(columns=['x_temp', 'y_temp', 'DISTANCIA'], inplace=True)
     return df_aglomerado
 
-if __name__ == '__main__':
-    datos = construir_dataset(anios=[2021, 2022], trimestres=[2, 3, 4])
+def save_data(data: pd.DataFrame, data_dir: str, filename: str) -> None:
     repo_path = fh.get_repo_path()
-    pr_path = os.path.join(repo_path, 'data', 'preprocessed')
-    data = pd.concat(datos).query('H15 == 1')
+    pr_path = os.path.join(repo_path, data_dir)
+    data_path = os.path.join(pr_path, filename)
+    data.to_csv(data_path, index=False)
+    return None
+
+def preprocesar_data(data: pd.DataFrame, train_test: bool = True) -> pd.DataFrame:
+    if len(data) > 1:
+        datos = pd.concat(data)
+    if len(data) == 1:
+        datos = data[0]
     drop_cols = [
         'IV8', 'IX_MAYEQ10', 'CAT_OCUP', 'CAT_INAC', 'CAT_OCUP_jefx', 'JEFE_TRABAJA', 'T_VI', 'V2_M', 'CH04_conyuge', 'CH04_jefx', 'NBI_SUBSISTENCIA', 'IV10', 'II7', 'IV12_1', 'IV12_3', 'PP07I', 
         'PP07H', 'PP02E_jefx', 'REALIZADA_jefx', 'REALIZADA_conyuge',
-        'H15'
+        'H15', 'ITF', 'REALIZADA'
     ]
-
-    columnas_binarias = [
-        'CH11', 'PP02H', 'PP04B1', 'REALIZADA', 'IV5', 'IV12_2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'V1', 'V2', 'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'PP07I_jefx', 'PP07H_jefx', 'PP04B1_jefx', 'CONYUGE_TRABAJA', 'JEFA_MUJER', 'HOGAR_MONOP', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA', 'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'DESERTO', 'MAS_500', 'CH04'
-    ]
-    data = data[data.H15==1]
+    if train_test is True:
+        columnas_binarias = [
+            'CH11', 'PP02H', 'PP04B1', 'IV5', 'IV12_2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'V1', 'V2', 'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'PP07I_jefx', 'PP07H_jefx', 'PP04B1_jefx', 'CONYUGE_TRABAJA', 'JEFA_MUJER', 'HOGAR_MONOP', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA', 'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'DESERTO', 'MAS_500', 'CH04'
+        ]
+    if train_test is False:
+        columnas_binarias = [
+            'CH11', 'PP02H', 'PP04B1', 'IV5', 'IV12_2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'V1', 'V2', 'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'PP07I_jefx', 'PP07H_jefx', 'PP04B1_jefx', 'CONYUGE_TRABAJA', 'JEFA_MUJER', 'HOGAR_MONOP', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA', 'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'MAS_500', 'CH04'
+        ]
+    data = datos[datos['H15'] == 1]
     data.drop(drop_cols, axis=1, inplace=True)
     data = homogeneizar_binarias(data, columnas_binarias)
     # PP04B1 --> renombre a servicio_domestico + reemplazo de valores
@@ -269,5 +285,129 @@ if __name__ == '__main__':
     cvars = data.columns.str.endswith('_conyuge')
     data[data.columns[cvars]] = data.loc[:, cvars].fillna(0)
     data = aglomerados_a_distancia(data)
-    data_path = os.path.join(pr_path, 'preprocessed_train.csv')
-    data.to_csv(data_path, index=False)
+    return data
+
+def datos_train(anios: list[int],
+                trimestres: list[int],
+                data_dir: str,
+                filename: str,
+                save_df: bool = True) -> pd.DataFrame:
+    datos, datos_individuos = data_constructor(anios=anios, trimestres=trimestres)
+    data = construir_dataset(datos, datos_individuos, trimestres[-1])
+    estudiantes = preprocesar_data(data)
+    if save_df is True:
+        save_data(estudiantes, data_dir=data_dir, filename=filename)
+        return None
+    if save_df is False:
+        return estudiantes
+
+def remover_duplicados(df_list):
+    if len(df_list) < 2:
+        raise ValueError("df_list debe ser una lista de al menos dos elementos.")
+    result_df = df_list[0]
+    for df in df_list[1:]:
+        result_df = pd.merge(result_df, df[['CODUSU', 'NRO_HOGAR', 'COMPONENTE']], 
+                             on=['CODUSU', 'NRO_HOGAR', 'COMPONENTE'], 
+                             how='left', indicator=True)
+        result_df = result_df[result_df['_merge'] == 'left_only']
+        result_df = result_df.drop('_merge', axis=1)
+
+    return result_df
+
+def datos_test(anios: list[int], 
+               trimestres: list[int],
+               data_dir: str, 
+               filename: str,
+               train_dataset: str | pd.DataFrame = "preprocessed_train.csv",
+               save_df: bool = True) -> pd.DataFrame:
+    datos, datos_individuos = data_constructor(anios=anios, trimestres=trimestres)
+    data = construir_dataset(datos, datos_individuos, trimestres[-1])
+    estudiantes = preprocesar_data(data)
+    train_data_path = os.path.join(fh.get_repo_path(), data_dir, train_dataset)
+    train_data = pd.read_csv(train_data_path)[['CODUSU', 'NRO_HOGAR', 'COMPONENTE']]
+    estudiantes = remover_duplicados([estudiantes, train_data])
+    if save_df is True:
+        save_data(estudiantes, data_dir=data_dir, filename=filename)
+        return None
+    if save_df is False:
+        return estudiantes
+
+def datos_predict(anios: list[int], 
+                  trimestres: list[int],
+                  data_dir: str, 
+                  filename: str,
+                  train_dataset: str | pd.DataFrame = "preprocessed_train.csv",
+                  test_dataset: str | pd.DataFrame = "preprocessed_test.csv",
+                  save_df: bool = True) -> pd.DataFrame:
+    datos, datos_individuos = data_constructor(anios=anios, trimestres=trimestres)
+    estudiantes = preprocesar_data(datos, train_test=False)
+    train_data_path = os.path.join(fh.get_repo_path(), data_dir, train_dataset)
+    test_data_path = os.path.join(fh.get_repo_path(), data_dir, test_dataset)
+    train_data = pd.read_csv(train_data_path)[['CODUSU', 'NRO_HOGAR', 'COMPONENTE']]
+    test_data = pd.read_csv(test_data_path)[['CODUSU', 'NRO_HOGAR', 'COMPONENTE']]
+    estudiantes = remover_duplicados([estudiantes, train_data])
+    estudiantes = remover_duplicados([estudiantes, test_data])
+    if save_df is True:
+        save_data(estudiantes, data_dir=data_dir, filename=filename)
+        return None
+    if save_df is False:
+        return estudiantes
+
+
+@app.command()
+def train(
+    anios: str = typer.Option(..., help="List of years"),
+    trimestres: str = typer.Option(..., help="List of trimesters"),
+    data_dir: str = typer.Option("data/preprocessed/", help="Data directory"),
+    filename: str = typer.Option("preprocessed_train.csv", help="Filename"),
+    save_df: bool = typer.Option(True, help="Whether to save the DataFrame")
+):
+    """
+    Ejecuta la función datos_train.
+    """
+    typer.echo("Generando dataset de entrenamiento.")
+    anos = list(map(int, anios.split(',')))
+    trims = list(map(int, trimestres.split(',')))
+    df = datos_train(anos, trims, data_dir, filename, save_df)
+    typer.echo("Dataset de entrenamiento generado exitosamente.")
+
+@app.command()
+def test(
+    anios: str = typer.Option(..., help="List of years"),
+    trimestres: str = typer.Option(..., help="List of trimesters"),
+    data_dir: str = typer.Option("data/preprocessed/", help="Data directory"),
+    filename: str = typer.Option("preprocessed_test.csv", help="Filename"),
+    train_dataset: str = typer.Option("preprocessed_train.csv", help="Train dataset filename"),
+    save_df: bool = typer.Option(True, help="Whether to save the DataFrame")
+):
+    """
+    Ejecuta la función datos_test.
+    """
+    typer.echo("Generando dataset de testeo.")
+    anos = list(map(int, anios.split(',')))
+    trims = list(map(int, trimestres.split(',')))
+    df = datos_test(anos, trims, data_dir, filename, train_dataset, save_df)
+    typer.echo("Dataset de testeo generado exitosamente.")
+
+@app.command()
+def predict(
+    anios: str = typer.Option(..., help="List of years"),
+    trimestres: str = typer.Option(..., help="List of trimesters"),
+    data_dir: str = typer.Option("data/preprocessed/", help="Data directory"),
+    filename: str = typer.Option("preprocessed_predict.csv", help="Filename"),
+    train_dataset: str= typer.Option("preprocessed_train.csv", help="Train dataset filename"),
+    test_dataset: str= typer.Option("preprocessed_test.csv", help="Test dataset filename"),
+    save_df: bool = typer.Option(True, help="Whether to save the DataFrame")
+):
+    """
+    Ejecuta la función datos_predict.
+    """
+    typer.echo("Generando dataset de predicción.")
+    anos = list(map(int, anios.split(',')))
+    trims = list(map(int, trimestres.split(',')))
+    df = datos_predict(anos, trims, data_dir, filename, train_dataset, test_dataset, save_df)
+    typer.echo("Dataset de predicción generado exitosamente.")
+
+
+if __name__ == '__main__':
+    app()

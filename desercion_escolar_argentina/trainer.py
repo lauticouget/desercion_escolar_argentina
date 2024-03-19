@@ -55,19 +55,13 @@ balanced = n_samples / (n_classes * np.bincount(train_data.DESERTO))
 weights = np.linspace(0.01, balanced, 10)
 class_weights = [{0: x[0], 1: balanced[1]-x[1]} for x in weights][:-1]
 param_grid = [
-    {'reduce_dim': [PCA()],
-     'reduce_dim__n_components': [10, 20, 30],
-     'classifier': [LogisticRegression(penalty='l1', solver='liblinear')],
+    {'classifier': [LogisticRegression(penalty='l1', solver='liblinear')],
      'classifier__C': np.logspace(-3, -2, 25),
      'classifier__class_weight': class_weights},
-    {'reduce_dim': [PCA()],
-     'reduce_dim__n_components': [10, 20, 30],
-     'classifier': [DecisionTreeClassifier()],
+    {'classifier': [DecisionTreeClassifier()],
      'classifier__max_depth': range(8, 36, 2),
      'classifier__class_weight': class_weights},
-    {'reduce_dim': [PCA()],
-     'reduce_dim__n_components': [10, 20, 30],
-     'classifier': [RandomForestClassifier()],
+    {'classifier': [RandomForestClassifier()],
      'classifier__n_estimators': range(8, 38, 2),
      'classifier__class_weight': class_weights}
 ]

@@ -38,5 +38,5 @@ def crear_feature_binaria(data: pd.DataFrame,
     Returns:
         pd.DataFrame: un DataFrame con la columna categórica de nombre 'nombre_feature'
     """
-    data.loc[:, nombre_feature] = np.where(condicion, 1, 0)
+    data.loc[:, nombre_feature] = np.where(condicion, 1.0, 0.0)
     return data

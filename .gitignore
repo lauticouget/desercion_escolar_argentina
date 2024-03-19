@@ -166,3 +166,11 @@ cython_debug/
 .workspace
 **/.vscode/
 
+<<<<<<< HEAD
+# catboost
+catbost_info/
+=======
+#CatBoost
+**/catboost_info/
+
+>>>>>>> 348b585 (train_validate_test: agregado catboost al pipeline)

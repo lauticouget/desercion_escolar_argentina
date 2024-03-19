@@ -1,19 +1,14 @@
 import os
 
 from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
-# from sklearn.metrics import confusion_matrix
-# from sklearn.metrics import ConfusionMatrixDisplay
 from catboost import CatBoostClassifier
 
 import pandas as pd
 import numpy as np
-from matplotlib import pyplot as plt
 
 from desercion_escolar_argentina.utils import file_handler as fh
 from desercion_escolar_argentina.artifacts import imputer as im
@@ -52,17 +47,18 @@ pipeline = Pipeline([
 n_samples = len(train_data.DESERTO)
 n_classes = train_data.DESERTO.nunique()
 balanced = n_samples / (n_classes * np.bincount(train_data.DESERTO))
-weights = np.linspace(0.01, balanced, 10)
-class_weights = [{0: x[0], 1: balanced[1]-x[1]} for x in weights][:-1]
+weights0 = np.linspace(0.5, 0.1, 10)
+weights1 = np.linspace(balanced[1]-1.5, 1, 10)
+class_weights = [{0: x, 1: y} for x, y in zip(weights0, weights1)]
 param_grid = [
     {'classifier': [LogisticRegression(penalty='l1', solver='liblinear')],
-     'classifier__C': np.logspace(-3, -2, 25),
+     'classifier__C': np.logspace(-3.5, -2, 25),
      'classifier__class_weight': class_weights},
     {'classifier': [DecisionTreeClassifier()],
-     'classifier__max_depth': range(8, 36, 2),
+     'classifier__max_depth': range(8, 36, 4),
      'classifier__class_weight': class_weights},
     {'classifier': [RandomForestClassifier()],
-     'classifier__n_estimators': range(8, 38, 2),
+     'classifier__n_estimators': range(8, 38, 4),
      'classifier__class_weight': class_weights}
 ]
 
@@ -125,7 +121,7 @@ for file in resampled_data:
     best_cb.fit(X_train, y_train)
     with open('model_summary.txt', 'a') as fd:
         fd.write(f'\n\n CatBoost en archivo resampleado {file} ---*')
-        fd.write(f'\n{best_cb}. \nSu recall fue de {best_cb.score(X_test, y_test):.2f}\n\n')
+        fd.write(f'\n{best_cb}. Con parámetros {best_cb.get_params()} \nSu recall fue de {best_cb.score(X_test, y_test):.2f}\n\n')
 
 
 

@@ -83,7 +83,7 @@ def update_violin_plot(selected_variable):
 if __name__ == '__main__':
     app.run_server(debug=True)
 
-    """
+"""
 Creo que este codigo realiza lo mismo y es simplificado
 
     app = dash.Dash(__name__)
@@ -110,4 +110,4 @@ def update_violin_plot(selected_column):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-    """
+"""

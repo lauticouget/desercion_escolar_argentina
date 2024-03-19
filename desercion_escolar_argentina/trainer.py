@@ -59,7 +59,7 @@ param_grid = [
      'reduce_dim__n_components': [10, 20, 30],
      'classifier': [LogisticRegression(penalty='l1', solver='liblinear')],
      'classifier__C': np.logspace(-3, -2, 25),
-     'classifier__class_weight': class_weights}
+     'classifier__class_weight': class_weights},
     {'reduce_dim': [PCA()],
      'reduce_dim__n_components': [10, 20, 30],
      'classifier': [DecisionTreeClassifier()],

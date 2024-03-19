@@ -21,7 +21,10 @@ id_cols = [
 ]
 
 repo_path = fh.get_repo_path()
-train_path = os.path.join(repo_path, 'data/preprocessed/', 'preprocessed_train.csv')
+# train_path = os.path.join(repo_path, 'data/preprocessed/', 'preprocessed_train.csv')
+train_path = os.path.join(
+    repo_path, "data/stage/", "df_resampled_ADASYN_escalado_0.5.csv"
+)
 test_path = os.path.join(repo_path, 'data/preprocessed/', 'preprocessed_test.csv')
 train_data = pd.read_csv(train_path)
 train_data = train_data.loc[:, ~train_data.columns.isin(id_cols)]
@@ -66,7 +69,8 @@ model = GridSearchCV(pipeline, param_grid, scoring='recall', cv=5, verbose=2)
 model.fit(X_train, y_train)
 results=pd.DataFrame(model.cv_results_)
 result_path = os.path.join(repo_path, 'models')
-results.to_csv(os.path.join(result_path, 'results_unsampled.csv'))
+# results.to_csv(os.path.join(result_path, 'results_unsampled.csv'))
+results.to_csv(os.path.join(result_path, "results_resampled_ADASYN_escalado_0.5.csv"))
 
 best = model.best_estimator_
 best.fit(X_train, y_train)
@@ -89,43 +93,39 @@ cbparams = [
      'l2_leaf_reg': np.logspace(-10, 0)}
 ]
 
-for file in resampled_data:
-    filepath = os.path.join(resampled_path, file)
-    data = pd.read_csv(filepath)
-    train_data = train_data.loc[:, ~train_data.columns.isin(id_cols)]
-    X_train = train_data.loc[:, train_data.columns != 'DESERTO']
-    y_train = train_data.loc[:, train_data.columns == 'DESERTO'].values.ravel()
-    pipeline_resampled = Pipeline([
-        ('imputer', im.make_imputer()),
-        ('scaler', sc.make_scaler()),
-        ('encoder', enc.make_encoder()),
-        ("reduce_dim", "passthrough"),
-        ('classifier', LogisticRegression())
-    ]).set_output(transform='pandas')
-    model_resampled = GridSearchCV(pipeline_resampled, param_grid, scoring='recall', cv=5, verbose=2)
-    model_resampled.fit(X_train, y_train)
-    results_resampled=pd.DataFrame(model_resampled.cv_results_)
-    result_path = os.path.join(repo_path, 'models')
-    results_resampled.to_csv(os.path.join(result_path, f'results_{file}'))
-    best_resampled = model_resampled.best_estimator_
-    best_resampled.fit(X_train, y_train)
-    with open('model_summary.txt', 'a') as fd:
-        fd.write(f'\n\nEn archivo resampleado {file} ---*')
-        fd.write(f'\n{best_resampled}. \nSu recall fue de {best_resampled.score(X_test, y_test):.2f}\n\n')
-    # catboost
-    X_train[cat_features] = X_train[cat_features].astype('object')
-    X_test[cat_features] = X_test[cat_features].astype('object')
-    cbgrid = GridSearchCV(CatBoostClassifier(), cbparams, scoring='recall', cv=5)
-    cbgrid.fit(X_train, y_train)
-    best_cb = cbgrid.best_estimator_
-    best_cb.fit(X_train, y_train)
-    with open('model_summary.txt', 'a') as fd:
-        fd.write(f'\n\n CatBoost en archivo resampleado {file} ---*')
-        fd.write(f'\n{best_cb}. Con parámetros {best_cb.get_params()} \nSu recall fue de {best_cb.score(X_test, y_test):.2f}\n\n')
-
-
-
-
+# for file in resampled_data:
+#     filepath = os.path.join(resampled_path, file)
+#     data = pd.read_csv(filepath)
+#     train_data = train_data.loc[:, ~train_data.columns.isin(id_cols)]
+#     X_train = train_data.loc[:, train_data.columns != 'DESERTO']
+#     y_train = train_data.loc[:, train_data.columns == 'DESERTO'].values.ravel()
+#     pipeline_resampled = Pipeline([
+#         ('imputer', im.make_imputer()),
+#         ('scaler', sc.make_scaler()),
+#         ('encoder', enc.make_encoder()),
+#         ("reduce_dim", "passthrough"),
+#         ('classifier', LogisticRegression())
+#     ]).set_output(transform='pandas')
+#     model_resampled = GridSearchCV(pipeline_resampled, param_grid, scoring='recall', cv=5, verbose=2)
+#     model_resampled.fit(X_train, y_train)
+#     results_resampled=pd.DataFrame(model_resampled.cv_results_)
+#     result_path = os.path.join(repo_path, 'models')
+#     results_resampled.to_csv(os.path.join(result_path, f'results_{file}'))
+#     best_resampled = model_resampled.best_estimator_
+#     best_resampled.fit(X_train, y_train)
+#     with open('model_summary.txt', 'a') as fd:
+#         fd.write(f'\n\nEn archivo resampleado {file} ---*')
+#         fd.write(f'\n{best_resampled}. \nSu recall fue de {best_resampled.score(X_test, y_test):.2f}\n\n')
+#     # catboost
+#     X_train[cat_features] = X_train[cat_features].astype('object')
+#     X_test[cat_features] = X_test[cat_features].astype('object')
+#     cbgrid = GridSearchCV(CatBoostClassifier(), cbparams, scoring='recall', cv=5)
+#     cbgrid.fit(X_train, y_train)
+#     best_cb = cbgrid.best_estimator_
+#     best_cb.fit(X_train, y_train)
+#     with open('model_summary.txt', 'a') as fd:
+#         fd.write(f'\n\n CatBoost en archivo resampleado {file} ---*')
+#         fd.write(f'\n{best_cb}. Con parámetros {best_cb.get_params()} \nSu recall fue de {best_cb.score(X_test, y_test):.2f}\n\n')
 
 
 # confusion_matrix = confusion_matrix(y_test, y_pred)

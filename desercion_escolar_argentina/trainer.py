@@ -69,7 +69,6 @@ result_path = os.path.join(repo_path, 'models')
 results.to_csv(os.path.join(result_path, 'results_unsampled.csv'))
 
 best = model.best_estimator_
-best.fit(X_train, y_train)
 
 with open('model_summary.txt', 'a') as fd:
     fd.write('*--Resumen de mejores modelos--*\n\n')

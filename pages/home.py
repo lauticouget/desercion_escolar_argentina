@@ -39,9 +39,9 @@ X.loc[:, 'DESERTO'] = y_pred
 #     regiones = json.load(file)
 # group = pd.DataFrame(data.groupby('REGION').count()['ESTADO']).reset_index()
 
-presentacion = '''
+presentacion = """
 En Argentina, la educación es un derecho consagrado por la Constitución Nacional y regulado por la Ley Nº 26.206 de Educación Nacional. La escolaridad obligatoria abarca 14 años consecutivos, desde sala de 4 y preescolar en el Nivel Inicial, pasando por el Nivel Primario (con duración de 6 o 7 años según la jurisdicción), hasta el Nivel Secundario (con duración de 6 o 5 años, según la duración del nivel primario de la jurisdicción).\n
-Este proyecto utiliza un modelo de machine learning para predecir deserción escolar de un trimestre a otro usando la base de datos de la EPH.'''
+Este proyecto utiliza un modelo de machine learning para predecir deserción escolar de un trimestre a otro usando la base de datos de la EPH."""
 
 dash.register_page(__name__, path='/')
 

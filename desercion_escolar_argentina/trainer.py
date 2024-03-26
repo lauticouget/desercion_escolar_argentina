@@ -2,7 +2,7 @@ import os
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 from catboost import CatBoostClassifier
@@ -21,11 +21,10 @@ id_cols = [
 ]
 
 repo_path = fh.get_repo_path()
-# train_path = os.path.join(repo_path, 'data/preprocessed/', 'preprocessed_train.csv')
 train_path = os.path.join(
-    repo_path, "data/stage/", "df_resampled_ADASYN_escalado_0.5.csv"
+    repo_path, "data/preprocessed/preprocessed_train.csv"
 )
-test_path = os.path.join(repo_path, 'data/preprocessed/', 'preprocessed_test.csv')
+test_path = os.path.join(repo_path, 'data/preprocessed/preprocessed_test.csv')
 train_data = pd.read_csv(train_path)
 train_data = train_data.loc[:, ~train_data.columns.isin(id_cols)]
 test_data = pd.read_csv(test_path)
@@ -47,50 +46,49 @@ pipeline = Pipeline([
     ('classifier', LogisticRegression())
 ]).set_output(transform='pandas')
 
-n_samples = len(train_data.DESERTO)
-n_classes = train_data.DESERTO.nunique()
-balanced = n_samples / (n_classes * np.bincount(train_data.DESERTO))
-weights0 = np.linspace(0.5, 0.1, 10)
-weights1 = np.linspace(balanced[1]-1.5, 1, 10)
-class_weights = [{0: x, 1: y} for x, y in zip(weights0, weights1)]
 param_grid = [
     {'classifier': [LogisticRegression(penalty='l1', solver='liblinear')],
      'classifier__C': np.logspace(-3.5, -2, 25),
-     'classifier__class_weight': class_weights},
+     'classifier__class_weight': ['balanced', None]},
     {'classifier': [DecisionTreeClassifier()],
-     'classifier__max_depth': range(8, 36, 4),
-     'classifier__class_weight': class_weights},
+     'classifier__max_depth': range(8, 38, 4),
+     'classifier__class_weight': ['balanced', None]},
     {'classifier': [RandomForestClassifier()],
      'classifier__n_estimators': range(8, 38, 4),
-     'classifier__class_weight': class_weights}
+     'classifier__class_weight': ['balanced', None]},
+    {'classifier': [BaggingClassifier(
+        estimator=LogisticRegression(penalty='l1', solver='liblinear'))],
+     'classifier__n_estimators': range(10, 32, 2),
+     'classifier__estimator__class_weight': ['balanced', None],
+     'classifier__estimator__C': np.linspace(0.0025, 0.01, 25)}
 ]
 
-model = GridSearchCV(pipeline, param_grid, scoring='recall', cv=5, verbose=2)
+model = GridSearchCV(pipeline, param_grid, scoring='f1', cv=5, verbose=2)
 model.fit(X_train, y_train)
 results=pd.DataFrame(model.cv_results_)
 result_path = os.path.join(repo_path, 'models')
-# results.to_csv(os.path.join(result_path, 'results_unsampled.csv'))
-results.to_csv(os.path.join(result_path, "results_resampled_ADASYN_escalado_0.5.csv"))
+results.to_csv(os.path.join(result_path, 'results_unsampled.csv'))
+# results.to_csv(os.path.join(result_path, "results_resampled_ADASYN_escalado_0.5.csv"))
 
 best = model.best_estimator_
 
-with open('model_summary.txt', 'a') as fd:
+with open('model_summary.txt', 'a', encoding='UTF-8') as fd:
     fd.write('*--Resumen de mejores modelos--*\n\n')
     fd.write('En data sin resamplear -->')
-    fd.write(f'\n{best}. \nSu recall fue de {best.score(X_test, y_test):.2f}\n\n')
+    fd.write(f'\n{best}. \nSu f1_score fue de {best.score(X_test, y_test):.2f}\n\n')
 
-resampled_path = os.path.join(repo_path, 'data/stage/')
-resampled_data = os.listdir(resampled_path)
+# resampled_path = os.path.join(repo_path, 'data/stage/')
+# resampled_data = os.listdir(resampled_path)
 
-cat_features = [
-    'REGION', 'CH03', 'CH07', 'CH15', 'CH09', 'CH16', 'ESTADO', 
-    'ESTADO_jefx', 'ESTADO_conyuge', 'PP02E', 'CH11', 'PP02H', 'servicio_domestico', 'IV5', 'IV12_2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'V1', 'V2', 'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'PP07I_jefx', 'APORTES_JUBILATORIOS_jefx', 'PP04B1_jefx', 'CONYUGE_TRABAJA', 'JEFA_MUJER', 'HOGAR_MONOP', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA', 'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'MAS_500', 'CH04'
-]
+# cat_features = [
+#     'REGION', 'CH03', 'CH07', 'CH15', 'CH09', 'CH16', 'ESTADO', 
+#     'ESTADO_jefx', 'ESTADO_conyuge', 'PP02E', 'CH11', 'PP02H', 'servicio_domestico', 'IV5', 'IV12_2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'V1', 'V2', 'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'PP07I_jefx', 'APORTES_JUBILATORIOS_jefx', 'PP04B1_jefx', 'CONYUGE_TRABAJA', 'JEFA_MUJER', 'HOGAR_MONOP', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA', 'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'MAS_500', 'CH04'
+# ]
 
-cbparams = [
-    {'depth': range(6, 11),
-     'l2_leaf_reg': np.logspace(-10, 0)}
-]
+# cbparams = [
+#     {'depth': range(6, 11),
+#      'l2_leaf_reg': np.logspace(-10, 0)}
+# ]
 
 # for file in resampled_data:
 #     filepath = os.path.join(resampled_path, file)

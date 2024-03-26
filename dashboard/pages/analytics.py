@@ -94,5 +94,4 @@ def draw_violin_plot(selected_variable):
 )
 def draw_violin_plot(selected_variable):
     hist = make_hist(df=data, col=selected_variable)
-    rename_traces(hist)
     return hist

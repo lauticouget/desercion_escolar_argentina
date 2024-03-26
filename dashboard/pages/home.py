@@ -29,20 +29,17 @@ id_cols = [
 X = data.loc[:, ~data.columns.isin(id_cols)].dropna()
 
 importantes = [
-    'CH06', 'NIVEL_ED', 'ratio_ocupados', 'NBI_TRABAJO_PRECARIO',
-    'IX_MEN10', 'V12', 'NIVEL_ED_jefx', 'CH03', 'CH07', 'ESTADO'
+    'CH06', 'CH04', 'NIVEL_ED', 'II8',
+    'IX_MEN10', 'CH07', 'V12', 'IV2', 'NIVEL_ED_jefx', 'ESTADO'
 ]
 
 y_pred = model.predict(X)
 X.loc[:, 'DESERTO'] = y_pred
 
-# with open(os.path.join(repo_path, 'regiones_argentina.geojson')) as file:
-#     regiones = json.load(file)
-# group = pd.DataFrame(data.groupby('REGION').count()['ESTADO']).reset_index()
 
 presentacion = """
 En Argentina, la educación es un derecho consagrado por la Constitución Nacional y regulado por la Ley Nº 26.206 de Educación Nacional. La escolaridad obligatoria abarca 14 años consecutivos, desde sala de 4 y preescolar en el Nivel Inicial, pasando por el Nivel Primario (con duración de 6 o 7 años según la jurisdicción), hasta el Nivel Secundario (con duración de 6 o 5 años, según la duración del nivel primario de la jurisdicción).\n
-Este proyecto utiliza un modelo de machine learning para predecir deserción escolar de un trimestre a otro usando la base de datos de la EPH."""
+Este proyecto utiliza un modelo de machine learning para predecir deserción escolar de un trimestre a otro usando la base de datos de la EPH. Al apretar el botón \"Predecir\" aplicará el modelo predictivo a los datos del tercer trimestre de 2023."""
 
 dash.register_page(__name__, path='/')
 
@@ -51,7 +48,8 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col(html.Div([
                 dbc.Button("Predecir", color="secondary", className="me-1", id='predict-button'),
-                dcc.Graph(figure={}, id='choropleth-map')
+                dcc.Graph(figure={}, id='choropleth-map'),
+                dbc.Container(html.Img(src='assets/conf_matrix.png'))
             ], style={'position': 'sticky', 'top': 0}), width=4),
         dbc.Col(html.Div([
             dcc.Graph(figure={}, id='chart1'),

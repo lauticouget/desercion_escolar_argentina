@@ -5,7 +5,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
-from catboost import CatBoostClassifier
+from sklearn.metrics import f1_score
 
 import pandas as pd
 import numpy as np
@@ -68,68 +68,12 @@ model.fit(X_train, y_train)
 results=pd.DataFrame(model.cv_results_)
 result_path = os.path.join(repo_path, 'models')
 results.to_csv(os.path.join(result_path, 'results_unsampled.csv'))
-# results.to_csv(os.path.join(result_path, "results_resampled_ADASYN_escalado_0.5.csv"))
+
 
 best = model.best_estimator_
+y_pred = best.predict(X_test)
 
 with open('model_summary.txt', 'a', encoding='UTF-8') as fd:
     fd.write('*--Resumen de mejores modelos--*\n\n')
-    fd.write('En data sin resamplear -->')
-    fd.write(f'\n{best}. \nSu f1_score fue de {best.score(X_test, y_test):.2f}\n\n')
-
-# resampled_path = os.path.join(repo_path, 'data/stage/')
-# resampled_data = os.listdir(resampled_path)
-
-# cat_features = [
-#     'REGION', 'CH03', 'CH07', 'CH15', 'CH09', 'CH16', 'ESTADO', 
-#     'ESTADO_jefx', 'ESTADO_conyuge', 'PP02E', 'CH11', 'PP02H', 'servicio_domestico', 'IV5', 'IV12_2', 'II3', 'II4_1', 'II4_2', 'II4_3', 'V1', 'V2', 'V21', 'V22', 'V3', 'V5', 'V6', 'V7', 'V8', 'V11', 'V12', 'V13', 'V14', 'PP07I_jefx', 'APORTES_JUBILATORIOS_jefx', 'PP04B1_jefx', 'CONYUGE_TRABAJA', 'JEFA_MUJER', 'HOGAR_MONOP', 'NBI_COBERTURA_PREVISIONAL', 'NBI_DIFLABORAL', 'NBI_HACINAMIENTO', 'NBI_SANITARIA', 'NBI_TENENCIA', 'NBI_TRABAJO_PRECARIO', 'NBI_VIVIENDA', 'NBI_ZONA_VULNERABLE', 'MAS_500', 'CH04'
-# ]
-
-# cbparams = [
-#     {'depth': range(6, 11),
-#      'l2_leaf_reg': np.logspace(-10, 0)}
-# ]
-
-# for file in resampled_data:
-#     filepath = os.path.join(resampled_path, file)
-#     data = pd.read_csv(filepath)
-#     train_data = train_data.loc[:, ~train_data.columns.isin(id_cols)]
-#     X_train = train_data.loc[:, train_data.columns != 'DESERTO']
-#     y_train = train_data.loc[:, train_data.columns == 'DESERTO'].values.ravel()
-#     pipeline_resampled = Pipeline([
-#         ('imputer', im.make_imputer()),
-#         ('scaler', sc.make_scaler()),
-#         ('encoder', enc.make_encoder()),
-#         ("reduce_dim", "passthrough"),
-#         ('classifier', LogisticRegression())
-#     ]).set_output(transform='pandas')
-#     model_resampled = GridSearchCV(pipeline_resampled, param_grid, scoring='recall', cv=5, verbose=2)
-#     model_resampled.fit(X_train, y_train)
-#     results_resampled=pd.DataFrame(model_resampled.cv_results_)
-#     result_path = os.path.join(repo_path, 'models')
-#     results_resampled.to_csv(os.path.join(result_path, f'results_{file}'))
-#     best_resampled = model_resampled.best_estimator_
-#     best_resampled.fit(X_train, y_train)
-#     with open('model_summary.txt', 'a') as fd:
-#         fd.write(f'\n\nEn archivo resampleado {file} ---*')
-#         fd.write(f'\n{best_resampled}. \nSu recall fue de {best_resampled.score(X_test, y_test):.2f}\n\n')
-#     # catboost
-#     X_train[cat_features] = X_train[cat_features].astype('object')
-#     X_test[cat_features] = X_test[cat_features].astype('object')
-#     cbgrid = GridSearchCV(CatBoostClassifier(), cbparams, scoring='recall', cv=5)
-#     cbgrid.fit(X_train, y_train)
-#     best_cb = cbgrid.best_estimator_
-#     best_cb.fit(X_train, y_train)
-#     with open('model_summary.txt', 'a') as fd:
-#         fd.write(f'\n\n CatBoost en archivo resampleado {file} ---*')
-#         fd.write(f'\n{best_cb}. Con parámetros {best_cb.get_params()} \nSu recall fue de {best_cb.score(X_test, y_test):.2f}\n\n')
-
-
-# confusion_matrix = confusion_matrix(y_test, y_pred)
-# class_names = ['No desertó', 'Desertó']
-
-# Display = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labels=class_names)
-
-# Display.plot(cmap=plt.cm.Blues)
-# plt.title(f'Matriz de confusión {best})')
-# plt.show()
+    fd.write('En data no resampleada -->')
+    fd.write(f'\n{best}. \nSu f1_score fue de {f1_score(y_test, y_pred):.2f}\n\n')

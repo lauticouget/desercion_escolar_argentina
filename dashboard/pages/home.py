@@ -7,7 +7,6 @@ import plotly.express as px
 import dash_bootstrap_components as dbc
 import pandas as pd
 import json
-import pyeph
 
 from desercion_escolar_argentina.utils import file_handler as fh
 
@@ -29,8 +28,8 @@ id_cols = [
 X = data.loc[:, ~data.columns.isin(id_cols)].dropna()
 
 importantes = [
-    'CH06', 'CH04', 'NIVEL_ED', 'II8',
-    'IX_MEN10', 'CH07', 'V12', 'IV2', 'NIVEL_ED_jefx', 'ESTADO'
+    'CH06', 'NIVEL_ED', 'II8', 'ratio_ocupados',
+    'IX_TOT', 'IX_MEN10', 'CH08', 'V12', 'NIVEL_ED_jefx', 'ESTADO'
 ]
 
 y_pred = model.predict(X)
@@ -49,22 +48,33 @@ layout = dbc.Container([
         dbc.Col(html.Div([
                 dbc.Button("Predecir", color="secondary", className="me-1", id='predict-button'),
                 dcc.Graph(figure={}, id='choropleth-map'),
-                dbc.Container(html.Img(src='assets/conf_matrix.png'))
+                dbc.Container(html.Img(src='assets/conf_matrix.png', 
+                                       style={'width': '85%'}))
             ], style={'position': 'sticky', 'top': 0}), width=4),
         dbc.Col(html.Div([
-            dcc.Graph(figure={}, id='chart1'),
-            dcc.Graph(figure={}, id='chart2'),
-            dcc.Graph(figure={}, id='chart3'),
-            dcc.Graph(figure={}, id='chart4'),
-            dcc.Graph(figure={}, id='chart5')
+            html.Div([html.H4("Edad"),
+                      dcc.Graph(figure={}, id='chart1')]),
+            html.Div([html.H4("Nivel educativo"), 
+                      dcc.Graph(figure={}, id='chart2')]),
+            html.Div([html.H4("Combustible utilizado para cocinar"),
+                      dcc.Graph(figure={}, id='chart3')]),
+            html.Div([html.H4("Ratio de ocupados/miembros del hogar"),
+                      dcc.Graph(figure={}, id='chart4')]),
+            html.Div([html.H4("Cdad. total de miembros del hogar"),
+                      dcc.Graph(figure={}, id='chart5')])
         ]), width=4),
-        dbc.Col([
-            dcc.Graph(figure={}, id='chart6'),
-            dcc.Graph(figure={}, id='chart7'),
-            dcc.Graph(figure={}, id='chart8'),
-            dcc.Graph(figure={}, id='chart9'),
-            dcc.Graph(figure={}, id='chart10')
-        ], width=4)
+        dbc.Col(html.Div([
+            html.Div([html.H4("Cdad. de miembros menores de 10 años"),
+                      dcc.Graph(figure={}, id='chart6')]),
+            html.Div([html.H4("Cobertura prepaga"), 
+                      dcc.Graph(figure={}, id='chart7')]),
+            html.Div([html.H4("Cantidad de ambientes del hogar"),
+                      dcc.Graph(figure={}, id='chart8')]),
+            html.Div([html.H4("Recibe cuotas de alimentos"),
+                      dcc.Graph(figure={}, id='chart9')]),
+            html.Div([html.H4("Estado ocupacional"),
+                      dcc.Graph(figure={}, id='chart10')])
+        ]), width=4)
     ])
 ], fluid=True)
 

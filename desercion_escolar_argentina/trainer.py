@@ -22,7 +22,7 @@ id_cols = [
 
 repo_path = fh.get_repo_path()
 train_path = os.path.join(
-    repo_path, "data/preprocessed/preprocessed_train.csv"
+    repo_path, "data/stage/df_resampled_.csv"
 )
 test_path = os.path.join(repo_path, 'data/preprocessed/preprocessed_test.csv')
 train_data = pd.read_csv(train_path)
@@ -67,13 +67,13 @@ model = GridSearchCV(pipeline, param_grid, scoring='f1', cv=5, verbose=2)
 model.fit(X_train, y_train)
 results=pd.DataFrame(model.cv_results_)
 result_path = os.path.join(repo_path, 'models')
-results.to_csv(os.path.join(result_path, 'results_unsampled.csv'))
+results.to_csv(os.path.join(result_path, 'results_AllKNN.csv'))
 
 
 best = model.best_estimator_
 y_pred = best.predict(X_test)
 
 with open('model_summary.txt', 'a', encoding='UTF-8') as fd:
-    fd.write('*--Resumen de mejores modelos--*\n\n')
-    fd.write('En data no resampleada -->')
+    # fd.write('*--Resumen de mejores modelos--*\n\n')
+    fd.write('\n\nEn data resampleada con AllKNN-->')
     fd.write(f'\n{best}. \nSu f1_score fue de {f1_score(y_test, y_pred):.2f}\n\n')

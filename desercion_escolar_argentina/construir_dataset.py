@@ -175,7 +175,8 @@ def data_constructor(anios: list[int], trimestres: list[int]):
     # estudiantes de edad >=14
     cond_estudiante = 'CH10 == 1'
     cond_edad = 'CH06 >= 14'
-    cond = cond_estudiante + '&' + cond_edad
+    cond_nivel_ed = 'NIVEL_ED <= 3'
+    cond = cond_estudiante + '&' + cond_nivel_ed + '&' + cond_edad
     estudiantes = [l.filtrar_por_columnas(base, cond) for base in data]
     # ingenieria de atributos
     data = []
